@@ -15,17 +15,35 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
           a. Install Support Arduino Board cores
           b. Install Support for 3rd party Board cores
       
-      5. Installations:
-            a. Library installation: arduino-cli lib search LibraryName
-            b. Core Installation: arduino-cli core install esp8266:esp8266
+      5. arduino-cli config init -- this can be done once 
       
-      6. arduino-cli config init -- this can be done once
-      
-      7. Add the board details in arduino-cli.yaml and updare arduino/3rd party board details using command: "arduino-cli core update-index"
+      6. Add the board details in arduino-cli.yaml and updare arduino/3rd party board details using command: "arduino-cli core update-index"
             board_manager:
                   additional_urls:
       
-      6. Few arduino commands: 
+      7. Arduino/3rd party board installations using yaml scripts: arduino-cli core search uno
+                  Ex: praveenv@praveenv-vm:~/Desktop$ arduino-cli core search uno
+                  Updating index: package_index.json downloaded
+                  Updating index: package_index.json.sig downloaded
+                  Updating index: package_esp8266com_index.json downloaded
+                  Updating index: package_esp32_index.json downloaded
+                  Updating index: package_esp32_index.json downloaded
+                  Updating index: package_rp2040_index.json downloaded
+                  ID              Version Name
+                  arduino:avr     1.8.4   Arduino AVR Boards
+                  arduino:megaavr 1.8.7   Arduino megaAVR Boards
+      
+      8. arduino-cli core list - it will display the core list on connected board.
+                  Ex: praveenv@praveenv-vm:~/Desktop/sketch2$ arduino-cli core list
+                        ID              Installed Latest Name
+                        esp8266:esp8266 3.0.2     3.0.2  esp8266
+      
+      9. Installations:
+            a. Core Installation: arduino-cli core install esp8266:esp8266 
+      
+      9. Library installation: arduino-cli lib search LibraryName
+      
+      10. Few arduino commands: 
             a.arduino-cli board list - it will display the connected board details
                   Ex:praveenv@praveenv-vm:~/Desktop/sketch2$ arduino-cli board list
                   Port         Type              Board Name FQBN Core
@@ -37,22 +55,6 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                   Board Name                      FQBN
                   DOIT ESP32 DEVKIT V1            esp32:esp32:esp32doit-devkit-v1
                   NodeMCU 1.0 (ESP-12E Module)    esp8266:esp8266:nodemcuv2
-                  
-            c. arduino-cli core list - it will display the core list on connected board.
-                  Ex: praveenv@praveenv-vm:~/Desktop/sketch2$ arduino-cli core list
-                        ID              Installed Latest Name
-                        esp8266:esp8266 3.0.2     3.0.2  esp8266
-            d. arduino-cli core search uno
-                  Ex: praveenv@praveenv-vm:~/Desktop$ arduino-cli core search uno
-                  Updating index: package_index.json downloaded
-                  Updating index: package_index.json.sig downloaded
-                  Updating index: package_esp8266com_index.json downloaded
-                  Updating index: package_esp32_index.json downloaded
-                  Updating index: package_esp32_index.json downloaded
-                  Updating index: package_rp2040_index.json downloaded
-                  ID              Version Name
-                  arduino:avr     1.8.4   Arduino AVR Boards
-                  arduino:megaavr 1.8.7   Arduino megaAVR Boards
 
       7. Create new sketch
             arduino-cli sketch new Sample
