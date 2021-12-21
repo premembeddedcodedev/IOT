@@ -69,6 +69,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
             
       8. compile the sketch using
             arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 sketch
+            (or) arduino-cli compile -b esp8266:esp8266:nodemcuv2 sketch
             
       9. upload using 
             arduino-cli upload -p /dev/ttyUSB0 --fqbn esp8266:esp8266:nodemcuv2 sketch
@@ -140,3 +141,5 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                                    Heap                                                                           vt=heap
                                    IRAM                                                                           vt=iram
 
+      16. arduino-cli sketch new <sample_prog_name>
+      
