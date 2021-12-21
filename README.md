@@ -142,4 +142,24 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                                    IRAM                                                                           vt=iram
 
       16. arduino-cli sketch new <sample_prog_name>
-      17. References: https://opensourcelibs.com/lib/esp8266-arduino-makefile
+      17. Other References for compilation: https://opensourcelibs.com/lib/esp8266-arduino-makefile
+            a. sudo apt-get update
+            b. sudo apt-get install arduino-mk
+            c. Link library ln -s /usr/share/arduino/Arduino.mk
+            d. mkdir libraries
+            e. make
+            f. cd build-uno/
+            g. make upload
+            h. make upload clean
+            i. sudo apt-get install screen
+            j. make upload monitor clean
+            k. screen -list
+            l. screen -r
+            m. screen -X quit
+            n. Makefile Example:
+                  ARDUINO_DIR = /usr/share/arduino
+                  ARDUINO_PORT = /dev/ttyUSB0
+                  USER_LIB_PATH = /home/praveenv/sambashare/NodeMCUProjects/sample/libraries
+                  BOARD_TAG = esp8266com:esp8266:generic
+                  include /usr/share/arduino/Arduino.mk
+
