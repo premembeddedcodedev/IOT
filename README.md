@@ -43,7 +43,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
             a. Core Installation: arduino-cli core install esp8266:esp8266 
       
       9. Library installation: 
-            a. arduino-cli lib search LibraryName (Reference: https://www.youtube.com/watch?v=cVod8k713_8&t=604s)
+            a. arduino-cli lib search LibraryName
             b. praveenv@praveenv-vm:~/Desktop$ arduino-cli lib list
                   Name    Installed     Available         Location Description
                   ssd1306 1.8.3         -                 user     -
@@ -142,4 +142,4 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                                    IRAM                                                                           vt=iram
 
       16. arduino-cli sketch new <sample_prog_name>
-      
+      17. References: https://opensourcelibs.com/lib/esp8266-arduino-makefile
