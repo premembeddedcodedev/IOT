@@ -146,7 +146,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
             a. sudo apt-get update
             b. sudo apt-get install arduino-mk
             c. Link library ln -s /usr/share/arduino/Arduino.mk
-            d. mkdir libraries
+            d. create example folder and .ino file then create : mkdir libraries
             e. make
             f. cd build-uno/
             g. make upload
@@ -160,6 +160,6 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                   ARDUINO_DIR = /usr/share/arduino
                   ARDUINO_PORT = /dev/ttyUSB0
                   USER_LIB_PATH = /home/praveenv/sambashare/NodeMCUProjects/sample/libraries
-                  BOARD_TAG = esp8266com:esp8266:generic
+                  BOARD_TAG = esp8266com:esp8266:generic //TODO: Not working -- <Need to decide based on board type - unfortunately dint work>
                   include /usr/share/arduino/Arduino.mk
 
