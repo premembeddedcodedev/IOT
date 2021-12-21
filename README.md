@@ -47,7 +47,8 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                   Name    Installed     Available         Location Description
                   ssd1306 1.8.3         -                 user     -
                   
-            c. arduino-cli lib uninstall "ssd1306" 
+            c. arduino-cli lib update-index
+            d. arduino-cli lib uninstall "ssd1306" 
 
       10. Few arduino commands: 
             a.arduino-cli board list - it will display the connected board details
