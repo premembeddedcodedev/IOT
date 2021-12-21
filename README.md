@@ -99,3 +99,40 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
       13. install upon updating yaml file: arduino-cli core install esp32:esp32
       
       14. Reference: https://www.devdungeon.com/content/arduino-cli-tutorial
+      
+      15. arduino-cli board details esp8266:esp8266:nodemcuv2
+            praveenv@praveenv-vm:~/Desktop/sketch2$ arduino-cli board details esp8266:esp8266:nodemcuv2
+            Board name:            NodeMCU 1.0 (ESP-12E Module)
+            FQBN:                  esp8266:esp8266:nodemcuv2
+            Board version:         3.0.2
+
+            Package name:          esp8266
+            Package maintainer:    ESP8266 Community
+            Package URL:           https://arduino.esp8266.com/stable/package_esp8266com_index.json
+            Package website:       https://github.com/esp8266/Arduino
+            Package online help:   https://esp8266.com/arduino
+
+            Platform name:         esp8266
+            Platform category:     ESP8266
+            Platform architecture: esp8266
+            Platform URL:          https://github.com/esp8266/Arduino/releases/download/3.0.2/esp8266-3.0.2.zip
+            Platform file name:    esp8266-3.0.2.zip
+            Platform size (bytes): 38204730
+            Platform checksum:     SHA-256:653add97df0a850ebc26f105355be749fb83c2db7b1ddf3e77950e694059eb9c
+
+            Required tool:         esp8266:xtensa-lx106-elf-gcc                                                   3.0.4-gcc10.3-1757bed
+
+            Required tool:         esp8266:mkspiffs                                                               3.0.4-gcc10.3-1757bed
+
+            Required tool:         esp8266:mklittlefs                                                             3.0.4-gcc10.3-1757bed
+
+            Required tool:         esp8266:python3                                                                3.7.2-post1
+
+            Option:                CPU Frequency                                                                  xtal
+                                   80 MHz                                                                    ✔    xtal=80
+                                   160 MHz                                                                        xtal=160
+            Option:                VTables                                                                        vt
+                                   Flash                                                                     ✔    vt=flash
+                                   Heap                                                                           vt=heap
+                                   IRAM                                                                           vt=iram
+
