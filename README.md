@@ -13,6 +13,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
       
       4. PLatform and board installation
           a. Install Support Arduino Board cores
+                  1. arduino-cli core install arduino:avr
           b. Install Support for 3rd party Board cores
       
       5. arduino-cli config init -- this can be done once 
@@ -101,7 +102,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
 
       13. install upon updating yaml file: arduino-cli core install esp32:esp32
       
-      14. Reference: https://www.devdungeon.com/content/arduino-cli-tutorial
+      14. Reference: 
       
       15. arduino-cli board details esp8266:esp8266:nodemcuv2
             praveenv@praveenv-vm:~/Desktop/sketch2$ arduino-cli board details esp8266:esp8266:nodemcuv2
