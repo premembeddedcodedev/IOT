@@ -163,3 +163,4 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                   BOARD_TAG = esp8266com:esp8266:generic //TODO: Not working -- <Need to decide based on board type - unfortunately dint work>
                   include /usr/share/arduino/Arduino.mk
 
+      18. SDK https://github.com/esp8266/esp8266-wiki/wiki/Toolchain
