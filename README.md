@@ -178,3 +178,5 @@ Arduino Commandline interface:
                   c. select huge app 8MB
                   d. select correct COM port
                   e. choose AI THINKER for camera module to work
+                  
+            6. Select Camserver for example from file->example
