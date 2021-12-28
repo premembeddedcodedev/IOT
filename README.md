@@ -166,6 +166,7 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
       18. SDK https://github.com/esp8266/esp8266-wiki/wiki/Toolchain
       
  ESP32 CAM:
+ 
             1. Connect 3.3v pins at the time of flashing
             2. Connect IO0 and Gnd short for flashing
             3. connect Tx->RX amd Rx->Tx for UART
