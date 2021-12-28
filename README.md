@@ -1,7 +1,8 @@
 # IOT
-IOT project
 
-Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
+Arduino Commandline interface:
+
+      Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
 
       1. Download arduino-cli utility from internet, we have two options for arduino availability
           a. directly download utility from internet - https://arduino.github.io/arduino-cli/0.20/installation/ (or) https://github.com/arduino/arduino-cli/releases
