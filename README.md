@@ -164,3 +164,16 @@ Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
                   include /usr/share/arduino/Arduino.mk
 
       18. SDK https://github.com/esp8266/esp8266-wiki/wiki/Toolchain
+      
+      
+ ESP32 CAM:
+      1. Connect 3.3v pins at the time of flashing
+      2. Connect IO0 and Gnd short for flashing
+      3. connect Tx->RX amd Rx->Tx for UART
+      4. We need to connect 5v for camera to work
+      5. settings for 
+            a. selecting right board: ESP32 Wroover module
+            b. choose 115200 as baud rate
+            c. select huge app 8MB
+            d. select correct COM port
+            e. choose AI THINKER for camera module to work
