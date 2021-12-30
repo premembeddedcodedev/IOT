@@ -45,7 +45,8 @@ Arduino Commandline interface:
       
       9. Library installation: 
             a. arduino-cli lib search LibraryName
-            b. praveenv@praveenv-vm:~/Desktop$ arduino-cli lib list
+            b. arduino-cli lib install <LibraryName>
+            c. praveenv@praveenv-vm:~/Desktop$ arduino-cli lib list
                   Name    Installed     Available         Location Description
                   ssd1306 1.8.3         -                 user     -
                   
