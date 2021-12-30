@@ -51,7 +51,13 @@ Arduino Commandline interface:
                   ssd1306 1.8.3         -                 user     -
                   
             c. arduino-cli lib update-index
-            d. arduino-cli lib uninstall "ssd1306" 
+            d. arduino-cli lib uninstall "ssd1306"
+            e. arduino-cli lib install AudioZero       # for the latest version.
+               arduino-cli lib install AudioZero@1.0.0 # for the specific version.
+               arduino-cli lib install --git-url https://github.com/arduino-libraries/WiFi101.git https://github.com/arduino-libraries/ArduinoBLE.git
+               arduino-cli lib install --zip-path /path/to/WiFi101.zip /path/to/ArduinoBLE.zip
+
+            References: https://arduino.github.io/arduino-cli/0.20/commands/arduino-cli_lib_install/
 
       10. Few arduino commands: 
             a.arduino-cli board list - it will display the connected board details
