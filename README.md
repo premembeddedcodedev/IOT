@@ -2,6 +2,8 @@
 
 Arduino Commandline interface:
 
+yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need to change whenever we want to install any library and board configurations
+
       Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
 
       1. Download arduino-cli utility from internet, we have two options for arduino availability
