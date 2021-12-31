@@ -1,6 +1,6 @@
 # IOT
 
-Arduino Commandline interface:
+Arduino Commandline interface (arduino-cli):
 
 yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need to change whenever we want to install any library and board configurations
 
