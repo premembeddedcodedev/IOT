@@ -175,7 +175,7 @@ yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need 
 
       18. SDK https://github.com/esp8266/esp8266-wiki/wiki/Toolchain
       
- ESP32 CAM:
+ ESP32 CAM: (Board Settings: /home/praveenv/.arduino15/packages/esp32/hardware/esp32/2.0.2/boards.txt - to select app storage esp32wrover.menu.PartitionScheme.huge_app=Huge APP (3MB No OTA/1MB SPIFFS))
  
             1. Connect 3.3v pins at the time of flashing
             2. Connect IO0 and Gnd short for flashing
