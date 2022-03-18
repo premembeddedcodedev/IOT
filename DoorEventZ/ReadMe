@@ -1,0 +1,10 @@
+1. painlessmesh library installation
+2. choose namedmesh example in painlessmesh library
+3. wait for D5 gpio status change in ESP8266
+4. select proper namedmesh server node
+
+ESP8266 (meshnodes door clients)		     ESP8266 (mesh master)			ESP8266 (Connected to internet)
+	|				---->   	|				---->		|
+     RF module (Tx node, event)			     RF module(Rx Node, Tx node)		RF module (Rx Node, send to gmail)
+
+5. https://how2electronics.com/esp8266-nrf24l01-gateway-arduino-node/#:~:text=On%20the%20receiver%20end%2C%20we,via%20the%20NRF24L01%20transceiver%20module.

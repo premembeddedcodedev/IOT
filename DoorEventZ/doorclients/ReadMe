@@ -1,0 +1,4 @@
+1. painlessmesh library installation
+2. choose namedmesh example in painlessmesh library
+3. wait for D5 gpio status change in ESP8266
+4. select proper namedmesh server node
