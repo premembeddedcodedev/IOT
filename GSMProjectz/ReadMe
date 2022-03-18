@@ -1,0 +1,5 @@
+ReadMe:
+	1. Connect ESP8266 TX connected to RX of GSM module (3.3v Rx)
+	2. Connect ESP8266 RX connected to TX of GSM module (3.3v Tx)
+	3. Connect external power supply using adapter 5V, 1A
+	4. connect SIM Card which has sms capable
