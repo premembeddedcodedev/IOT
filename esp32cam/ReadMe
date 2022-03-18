@@ -1,0 +1,5 @@
+1. choose ESP32 -> CameraServer in the example code
+2. select AITHinker macro
+3. choose 3.3v when uploading code
+4. choose 5v when it is running from ESP32
+
