@@ -18,3 +18,14 @@ Working without username and password:
 
 example:
 	mosquitto_sub -u username -P password -t newtopic/test -h test.mosquitto.org
+
+MQTT always follows below architecture:
+
+-------      -------      --------
+producer ---> Broker ---> Consumer
+--------     -------     ---------
+
+127.0.0.1 is always same as your IP address - loopback this will work instead of giving
+hardware ip address
+
+
