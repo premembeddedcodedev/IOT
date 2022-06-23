@@ -1,0 +1,16 @@
+Arduino:
+https://github.com/plerup/makeEspArduino
+
+Basic Config:
+https://github.com/digiampietro/arduino-makefile
+
+dependecies:
+https://github.com/digiampietro/arduino-manifest
+
+
+https://www.pcbway.com/blog/Activities/Arduino_cli__compile__upload_and_manage_libraries__cores__and_boards.html
+https://arduino.github.io/arduino-cli/0.20/commands/arduino-cli_lib_install/#examples
+https://create.arduino.cc/projecthub/B45i/getting-started-with-arduino-cli-7652a5
+
+painlessMesh:
+https://randomnerdtutorials.com/esp-mesh-esp32-esp8266-painlessmesh/
