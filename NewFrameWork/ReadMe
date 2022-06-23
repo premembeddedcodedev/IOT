@@ -14,3 +14,21 @@ https://create.arduino.cc/projecthub/B45i/getting-started-with-arduino-cli-7652a
 
 painlessMesh:
 https://randomnerdtutorials.com/esp-mesh-esp32-esp8266-painlessmesh/
+
+
+Setup:
+		 MQTT			   NRF	           	WIFI
+	RPI <================= MailNode <----------- MeshNod <--------------DoorEventsNode
+(Broker & subscriber) 	      (producer) 
+	   producer.ino
+	   consumer.ino
+	   broker.py
+					       	      || NRF channel
+	
+			 			Nano (i2c_temp_Sensor)
+
+		
+			   			      ||i2c channel
+
+
+	 					Nano (i2c_display)
