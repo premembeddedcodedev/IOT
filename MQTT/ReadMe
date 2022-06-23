@@ -14,6 +14,10 @@ https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-con
 	allow_anonymous true
 
 	$ sudo systemctl restart mosquitto.service
+	
+	(or)
+
+	$ sudo service mosquitto start/stop
 
 
 Working without username and password:
@@ -31,5 +35,3 @@ producer ---> Broker ---> Consumer
 
 127.0.0.1 is always same as your IP address - loopback this will work instead of giving
 hardware ip address
-
-
