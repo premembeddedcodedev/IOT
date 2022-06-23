@@ -1,6 +1,10 @@
 Follow the instructions:
 http://www.steves-internet-guide.com/install-mosquitto-linux/
 
+MQTT Broker run:
+	https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-connection
+	http://www.steves-internet-guide.com/install-mosquitto-linux/
+
 Follow the
 https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-connection
 

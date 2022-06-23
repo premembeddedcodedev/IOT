@@ -1,0 +1,1000 @@
+ 1251  vim Makefile 
+ 1252  ls
+ 1253  vim 2.Send_to_mainNode.ino 
+ 1254  ls
+ 1255  vim namedMesh.h 
+ 1256  ls
+ 1257  vim 2.Send_to_mainNode.ino 
+ 1258  ls
+ 1259  vim manifest.txt 
+ 1260  l
+ 1261  ls
+ 1262  vim 2.Send_to_mainNode.ino 
+ 1263  ls
+ 1264  vim 2.Send_to_mainNode.ino 
+ 1265  ls
+ 1266  vim Makefile 
+ 1267  ls
+ 1268  cd ..
+ 1269  ls
+ 1270  git status
+ 1271  rm 2.Send_to_mainNode/manifest.txt 4.Nano_Display/manifest.txt 5.Door_Sensor/manifest.txt mail/manifest.txt 
+ 1272  ls
+ 1273  git status
+ 1274  git show 2.Send_to_mainNode/2.Send_to_mainNode.ino
+ 1275  git show
+ 1276  git diff 2.Send_to_mainNode/
+ 1277  vim 2.Send_to_mainNode/2.Send_to_mainNode.ino 
+ 1278  ls
+ 1279  vim 2.Send_to_mainNode/2.Send_to_mainNode.ino 
+ 1280  ls
+ 1281  vim 2.Send_to_mainNode/Makefile 
+ 1282  ls
+ 1283  vim 2.Send_to_mainNode/
+ 1284  vim 2.Send_to_mainNode/2.Send_to_mainNode.ino 
+ 1285  minicom -s
+ 1286  chmod 664 /etc/minicom/minirc.dfl
+ 1287  vim /etc/minicom/minirc.USB0_terminal 
+ 1288  sudo -s chmod 664 /etc/minicom/minirc.dfl
+ 1289  sudo -s chmod 664 /etc/minicom/minirc.profilic 
+ 1290  vim /etc/minicom/minirc.USB0_terminal 
+ 1291  minicom minirc.USB0_terminal
+ 1292  ls
+ 1293  ls /etc/minicom/minirc.USB0
+ 1294  ls /etc/minicom/
+ 1295  ls /etc/minicom/ -al
+ 1296  chmod 777  /etc/minicom/minirc.USB0
+ 1297  sudo -s chmod 777  /etc/minicom/minirc.USB0
+ 1298  sudo -s chmod 777  /etc/minicom/minirc.USB0_terminal 
+ 1299  sudo -s chmod 777  /etc/minicom/minirc.USB1_terminal 
+ 1300  ls
+ 1301  sudo -s chmod 755  /etc/minicom/minirc.USB0
+ 1302  sudo -s chmod 755  /etc/minicom/minirc.USB0_terminal 
+ 1303  ls
+ 1304  minicom USB0
+ 1305  minicom USB1
+ 1306  minicom USB0
+ 1307  minicom USB1
+ 1308  ls
+ 1309  make clean
+ 1310  ls
+ 1311  vim Makefile 
+ 1312  ls
+ 1313  make
+ 1314  minicom USB1
+ 1315  ls
+ 1316  ls /dev/ttyUSB0 
+ 1317  minicom USB1
+ 1318  exit
+ 1319  ls
+ 1320  minicom -s
+ 1321  minicom
+ 1322  minicom --help
+ 1323  minicom -s
+ 1324  ls
+ 1325  ls /etc/minicom/minirc.USB0SerialPort /etc/minicom/minirc.USB0SerialPort 
+ 1326  minicom -s 
+ 1327  sudo -s minicom -s 
+ 1328  minicom USB1
+ 1329  minicom USB0
+ 1330  exit
+ 1331  ls
+ 1332  cd Desktop/
+ 1333  ls
+ 1334  cd -
+ 1335  ls
+ 1336  cd Sa
+ 1337  ls
+ 1338  cd sambashare/Door_working_set/
+ 1339  s
+ 1340  ls
+ 1341  cd 2.Send_to_mainNode/
+ 1342  ls
+ 1343  vim 2.Send_to_mainNode.ino 
+ 1344  cd ..
+ 1345  ls
+ 1346  cd 5.Door_Sensor/
+ 1347  ls
+ 1348  vim Makefile 
+ 1349  ls
+ 1350  make
+ 1351  ls
+ 1352  git status
+ 1353  make clean
+ 1354  ls
+ 1355  git status
+ 1356  git add .
+ 1357  git commit -a -m "Makefile adding other source files"
+ 1358  ls
+ 1359  vim Makefile 
+ 1360  ls
+ 1361  git status
+ 1362  cd ..
+ 1363  ls
+ 1364  cd 3.Nano_temp_Sensor/
+ 1365  cd ..
+ 1366  l
+ 1367  ls
+ 1368  cd 2.Send_to_mainNode/
+ 1369  ls
+ 1370  vim 2.Send_to_mainNode.ino 
+ 1371  make
+ 1372  vim 2.Send_to_mainNode.ino +72
+ 1373  vim ../4.Nano_Display/4.Nano_Display.ino 
+ 1374  vim ../3.Nano_temp_Sensor/3.Nano_temp_Sensor.ino 
+ 1375  vim 2.Send_to_mainNode.ino +72
+ 1376  vim ../5.Door_Sensor/5.Door_Sensor.ino 
+ 1377  vim ../5.Door_Sensor/Makefile 
+ 1378  vim Makefile 
+ 1379  ls
+ 1380  vim 2.Send_to_mainNode.ino 
+ 1381  cd ..
+ 1382  ls
+ 1383  cd 5.Door_Sensor/
+ 1384  ls
+ 1385  vim 5.Door_Sensor.ino sssss
+ 1386  rm .5.Door_Sensor.ino.swp 
+ 1387  vim 5.Door_Sensor.ino 
+ 1388  rm ../2.Send_to_mainNode/.2.Send_to_mainNode.ino.swp 
+ 1389  vim 5.Door_Sensor.ino 
+ 1390  ls
+ 1391  vim 5.Door_Sensor.ino 
+ 1392  cd ../2.Send_to_mainNode/
+ 1393  ls
+ 1394  make
+ 1395  vim 5.Door_Sensor.ino 
+ 1396  vim 2.Send_to_mainNode.ino 
+ 1397  make
+ 1398  vim +127
+ 1399  vim 2.Send_to_mainNode.ino +127
+ 1400  make
+ 1401  vim 2.Send_to_mainNode.ino +245
+ 1402  make
+ 1403  vim 2.Send_to_mainNode.ino +115
+ 1404  make
+ 1405  vim 2.Send_to_mainNode.ino +115
+ 1406  make
+ 1407  vim 2.Send_to_mainNode.ino +115
+ 1408  cd ../
+ 1409  cd 5.Door_Sensor/
+ 1410  ls
+ 1411  vim 5.Door_Sensor.ino 
+ 1412  cd ..
+ 1413  ls
+ 1414  vim 2.Send_to_mainNode/2.Send_to_mainNode.ino 
+ 1415  ls
+ 1416  cd 2.Send_to_mainNode/
+ 1417  l
+ 1418  ls
+ 1419  vim 2.Send_to_mainNode.ino 
+ 1420  make
+ 1421  vim 2.Send_to_mainNode.ino 
+ 1422  cd ..
+ 1423  ls
+ 1424  cd 5.Door_Sensor/
+ 1425  ls
+ 1426  vim 5.Door_Sensor.ino 
+ 1427  make clean
+ 1428  make
+ 1429  vim 5.Door_Sensor.ino +298
+ 1430  make
+ 1431  vim 5.Door_Sensor.ino +45
+ 1432  vim 5.Door_Sensor.ino +116
+ 1433  make
+ 1434  vim 5.Door_Sensor.ino +128
+ 1435  make
+ 1436  vim 5.Door_Sensor.ino +128
+ 1437  vim 5.Door_Sensor.ino +131
+ 1438  vim 5.Door_Sensor.ino +173
+ 1439  vim 5.Door_Sensor.ino +177
+ 1440  vim 5.Door_Sensor.ino +184
+ 1441  make clean
+ 1442  make
+ 1443  vim 5.Door_Sensor.ino +264
+ 1444  make clen
+ 1445  make 
+ 1446  ls
+ 1447  make clean
+ 1448  ls
+ 1449  cd ..
+ 1450  ls
+ 1451  cd 2.Send_to_mainNode/
+ 1452  ls
+ 1453  make clean
+ 1454  make
+ 1455  ls
+ 1456  make clean
+ 1457  ls
+ 1458  cd ..
+ 1459  ls
+ 1460  cd 5.Door_Sensor/
+ 1461  ls
+ 1462  vim 5.Door_Sensor.ino 
+ 1463  make clean
+ 1464  make
+ 1465  vim 5.Door_Sensor.ino +201
+ 1466  make clean
+ 1467  make
+ 1468  vim 5.Door_Sensor.ino 
+ 1469  vim Makefile 
+ 1470  vim 5.Door_Sensor.ino 
+ 1471  vim Makefile 
+ 1472  make
+ 1473  vim Makefile 
+ 1474  make clean
+ 1475  make
+ 1476  vim Makefile 
+ 1477  make clean
+ 1478  ls
+ 1479  clear
+ 1480  ls
+ 1481  dmesg | grep ttyUSB0
+ 1482  minicom -s
+ 1483  vim Makefile 
+ 1484  vim 5.Door_Sensor.ino 
+ 1485  vim Makefile 
+ 1486  make
+ 1487  vim Makefile 
+ 1488  chmod 755 /dev/ttyUSB0 
+ 1489  sudo -s chmod 777 /dev/ttyUSB0 
+ 1490  ls
+ 1491  vim Makefile 
+ 1492  make clean
+ 1493  make
+ 1494  make SERIAL_DEV=/dev/ttyUSB0
+ 1495  vim Makefile
+ 1496  ls /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/5.Door_Sensor.ino.bin
+ 1497  ls /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/5.Door_Sensor.ino.
+ 1498  vim Makefile 
+ 1499  :q!
+ 1500  vim Makefile 
+ 1501  pip3 install esptool
+ 1502  python -m pip install esptool
+ 1503  pip2 install esptool
+ 1504  pip install setuptools
+ 1505  python -m esptool
+ 1506  make
+ 1507  ls /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/5.Door_Sensor.ino.bin
+ 1508  vim Makefile 
+ 1509  make
+ 1510  make upload
+ 1511  mkdir /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1512  ls /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1513  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1514  make upload
+ 1515  minicom -s
+ 1516  ls
+ 1517  make clean
+ 1518  ls
+ 1519  ls /dev/
+ 1520  ls
+ 1521  cd ..
+ 1522  ls
+ 1523  cd 2.Send_to_mainNode/
+ 1524  ls
+ 1525  vim 2.Send_to_mainNode.ino 
+ 1526  cp ../5.Door_Sensor/Makefile .
+ 1527  ls
+ 1528  vim Makefile 
+ 1529  make clean
+ 1530  ls
+ 1531  vim 2.Send_to_mainNode.ino 
+ 1532  vim Makefile 
+ 1533  make
+ 1534  make upload
+ 1535  ls
+ 1536  dmesg 
+ 1537  ls
+ 1538  ls /dev/ttyUSB0 
+ 1539  make upload
+ 1540  ls /tmp/
+ 1541  ls /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/2.Send_to_mainNode.ino.bin
+ 1542  ls /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1543  cp bin/2.Send_to_mainNode.ino.bin /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1544  make upload
+ 1545  dmesg 
+ 1546  ls /dev/ttyUSB1 
+ 1547  ;s
+ 1548  ls
+ 1549  vim Makefile 
+ 1550  ls
+ 1551  tmux
+ 1552  exit
+ 1553  ls
+ 1554  cd Desktop/
+ 1555  ls
+ 1556  cd ..
+ 1557  ls
+ 1558  cd Sa
+ 1559  ls
+ 1560  cd sambashare/
+ 1561  ls
+ 1562  cd Door_working_set/
+ 1563  ls
+ 1564  cd 3.Nano_temp_Sensor/
+ 1565  ls
+ 1566  cd ..
+ 1567  ls
+ 1568  cd 2.Send_to_mainNode/
+ 1569  ls
+ 1570  vim 2.Send_to_mainNode.ino 
+ 1571  ls
+ 1572  cd ..
+ 1573  ls
+ 1574  cd 5.Door_Sensor/
+ 1575  ls
+ 1576  vim 5.Door_Sensor.ino 
+ 1577  vim Makefile 
+ 1578  vim 5.Door_Sensor.ino 
+ 1579  make clean
+ 1580  make
+ 1581  ls
+ 1582  cleat
+ 1583  ls
+ 1584  vim 5.Door_Sensor.ino 
+ 1585  ls
+ 1586  vim Makefile 
+ 1587  make 
+ 1588  make upload
+ 1589  ls /dev/ttyUSB1 
+ 1590  ls /dev/ttyUSB
+ 1591  ls /dev/ttyUSB1 
+ 1592  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1593  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/bin.ino
+ 1594  vim Makefile 
+ 1595  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1596  vim 5.Door_Sensor.ino 
+ 1597  make SER
+ 1598  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1599  vim 5.Door_Sensor.ino 
+ 1600  vim Makefile 
+ 1601  vim 5.Door_Sensor.ino 
+ 1602  make
+ 1603  vim 5.Door_Sensor.ino 
+ 1604  vim Makefile 
+ 1605  make clean
+ 1606  ake
+ 1607  make
+ 1608  vim 5.Door_Sensor.ino +207
+ 1609  make
+ 1610  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1611  make clean
+ 1612  ls
+ 1613  make
+ 1614  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1615  vim 5.Door_Sensor.ino +207
+ 1616  make clean
+ 1617  ls
+ 1618  rm /tmp/arduino-sketch-*
+ 1619  rm -rf /tmp/arduino-sketch-*
+ 1620  ls
+ 1621  ls /tmp/
+ 1622  ls
+ 1623  vim Makefile 
+ 1624  make
+ 1625  vim Ma
+ 1626  vim Makefile 
+ 1627  vim 5.Door_Sensor.ino 
+ 1628  make clean
+ 1629  ls
+ 1630  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1631  ls
+ 1632  make clean
+ 1633  ls
+ 1634  ls compile 
+ 1635  ls
+ 1636  ls -al compile 
+ 1637  ls compile 
+ 1638  ls
+ 1639  rm compile 
+ 1640  ls
+ 1641  make 
+ 1642  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1643  vim Makefile 
+ 1644  ls
+ 1645  ls build/
+ 1646  ls bin/
+ 1647  pwd
+ 1648  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1649  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/5.Door_Sensor.ino/bin/
+ 1650  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/
+ 1651  vim Makefile 
+ 1652  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/5.Door_Sensor.ino/bin/5.Door_Sensor.ino.bin
+ 1653  pwd
+ 1654  cd bin/
+ 1655  ls
+ 1656  pwd
+ 1657  vim Ma
+ 1658  cd ..
+ 1659  ls
+ 1660  vim Makefile 
+ 1661  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1662  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/5.Door_Sensor.ino.bin
+ 1663  vim Makefile 
+ 1664  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/bin.ino/home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/bin.ino
+ 1665  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/bin.ino
+ 1666  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/*.ino
+ 1667  ls
+ 1668  vim Makefile 
+ 1669  ls /home/praveenv/sambashare/Door_working_set/5.Door_Sensor/bin/bin.ino
+ 1670  vim Makefile 
+ 1671  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1672  vim Makefile 
+ 1673  make
+ 1674  ls
+ 1675  make clean
+ 1676  make
+ 1677  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1678  vim Makefile 
+ 1679  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1680  vim Makefile 
+ 1681  cp bin/5.Door_Sensor.ino.bin .
+ 1682  ls
+ 1683  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1684  vim Makefile 
+ 1685  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1686  vim Makefile 
+ 1687  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1688  vim Makefile 
+ 1689  ls
+ 1690  make
+ 1691  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1692  arduino-cli upload --help
+ 1693  vim Makefile 
+ 1694  ls
+ 1695  arduino-cli -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 5.Door_Sensor.ino.bin 
+ 1696  vim Makefile 
+ 1697  arduino-cli upload -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 5.Door_Sensor.ino.bin 
+ 1698  arduino-cli upload -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 ./ 5.Door_Sensor.ino.bin 
+ 1699  arduino-cli upload -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 ./5.Door_Sensor.ino
+ 1700  arduino-cli upload -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 5.Door_Sensor.ino
+ 1701  vim Makefile 
+ 1702  arduino-cli upload -p /dev/ttyACM0 – fqbn arduino:samd:mkr1000 Arduino/MyFirstSketch
+ 1703  arduino-cli upload -p /dev/ttyUSB1 5.Door_Sensor.ino.bin 
+ 1704  arduino-cli upload -b esp8266:esp8266:nodemcuv2 -p /dev/ttyUSB1 5.Door_Sensor.ino
+ 1705  mkdir /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1706  ls
+ 1707  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1708  ls
+ 1709  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1710  ls
+ 1711  vim 5.Door_Sensor.ino
+ 1712  make
+ 1713  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1714  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1715  vim 5.Door_Sensor.ino
+ 1716  make clean
+ 1717  ls
+ 1718  makr
+ 1719  make
+ 1720  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1721  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1722  ls
+ 1723  vim 5.Door_Sensor.ino
+ 1724  cd ..
+ 1725  ls
+ 1726  cd 2.Send_to_mainNode/
+ 1727  ls
+ 1728  vim 2.Send_to_mainNode.ino 
+ 1729  ls
+ 1730  vim 2.Send_to_mainNode.ino 
+ 1731  vim Makefile 
+ 1732  vim 2.Send_to_mainNode.ino 
+ 1733  vim ../5.Door_Sensor/5.Door_Sensor.ino
+ 1734  vim 2.Send_to_mainNode.ino 
+ 1735  ls
+ 1736  vim Makefile 
+ 1737  make clean
+ 1738  make
+ 1739  ls /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1740  cp bin/2.Send_to_mainNode.ino.bin /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1741  ls
+ 1742  make SERIAL_DEV=/dev/ttyUSB0 upload
+ 1743  vim 2.Send_to_mainNode.ino 
+ 1744  vim ../5.Door_Sensor/5.Door_Sensor.ino
+ 1745  cd ..
+ 1746  ls
+ 1747  cd 5.Door_Sensor/
+ 1748  ls
+ 1749  vim 5.Door_Sensor.ino
+ 1750  ls
+ 1751  make clean
+ 1752  make
+ 1753  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1754  ls
+ 1755  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1756  make SERIAL_DEV=/dev/ttyUSB1 upload
+ 1757  cd ..
+ 1758  ls
+ 1759  cd 2.Send_to_mainNode/
+ 1760  ls
+ 1761  make clean
+ 1762  make
+ 1763  ls
+ 1764  cp bin/2.Send_to_mainNode.ino.bin /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1765  make SERIAL_DEV=/dev/ttyUSB0 upload
+ 1766  vim 2.Send_to_mainNode.ino 
+ 1767  make clean
+ 1768  ls
+ 1769  make
+ 1770  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1771  cp bin/2.Send_to_mainNode.ino.bin /tmp/arduino-sketch-CE1E865D5F30C93EC5124F03B0918FEF/
+ 1772  make SERIAL_DEV=/dev/ttyUSB0 upload
+ 1773  ls
+ 1774  vim 2.Send_to_mainNode.ino 
+ 1775  ls
+ 1776  vim 2.Send_to_mainNode.ino 
+ 1777  make clean
+ 1778  ls
+ 1779  vim 2.Send_to_mainNode.ino 
+ 1780  make
+ 1781  ls
+ 1782  make clean
+ 1783  ls
+ 1784  cd ..
+ 1785  ls
+ 1786  vim ReadMe 
+ 1787  ls
+ 1788  lsusb
+ 1789  ls
+ 1790  cd 5.Door_Sensor/b
+ 1791  ls
+ 1792  cd 5.Door_Sensor/
+ 1793  ls
+ 1794  vim 5.Door_Sensor.ino
+ 1795  ls
+ 1796  make clean
+ 1797  make
+ 1798  make SERIAL_DEV=/dev/ttyUSB0 upload
+ 1799  ls
+ 1800  make
+ 1801  vim 5.Door_Sensor.ino
+ 1802  cp bin/5.Door_Sensor.ino.bin /tmp/arduino-sketch-5BFBBE21711336A792B4D2EC32E877F3/
+ 1803  make SERIAL_DEV=/dev/ttyUSB0 upload
+ 1804  ls
+ 1805  cd ..
+ 1806  ls
+ 1807  cd 2.Send_to_mainNode/
+ 1808  ls
+ 1809  make clean
+ 1810  cd 4
+ 1811  ls
+ 1812  cd ..
+ 1813  ls
+ 1814  cd 3.Nano_temp_Sensor/
+ 1815  ls
+ 1816  make clean
+ 1817  ls
+ 1818  cd ..
+ 1819  ls
+ 1820  cd 4.Nano_Display/
+ 1821  ls
+ 1822  make clean
+ 1823  ls
+ 1824  vi compile 
+ 1825  ls
+ 1826  cd ..
+ 1827  ls
+ 1828  cd 5.Door_Sensor/
+ 1829  ls
+ 1830  make clean
+ 1831  ls
+ 1832  cd ..
+ 1833  ls
+ 1834  cd ..
+ 1835  ls
+ 1836  tar -cvf Door_working_set.tar.gz Door_working_set/
+ 1837  ls
+ 1838  ls
+ 1839  mosquitto
+ 1840  sudo apt install mosquitto
+ 1841  sudo -s apt-get install mosquitto
+ 1842  sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppasudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+ 1843  sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+ 1844  sudo apt-get install mosquitto
+ 1845  sudo apt-get update
+ 1846  sudo apt-get install mosquitto
+ 1847  exit
+ 1848  cd /sambashare/Door_working_set/Example/flash
+ 1849  cd sambashare/Door_working_set/Example/flash
+ 1850  ls
+ 1851  make clean
+ 1852  s
+ 1853  ls
+ 1854  make show_boards
+ 1855  vim ReadMe
+ 1856  cd ..
+ 1857  ls
+ 1858  cd ..
+ 1859  ls
+ 1860  cd ..
+ 1861  ls
+ 1862  mkdir ArduinoMakefile
+ 1863  cd ArduinoMakefile/
+ 1864  ls
+ 1865  git clone https://github.com/esp8266/Arduino.git
+ 1866  ls
+ 1867  git clone https://github.com/espressif/arduino-esp32.git
+ 1868  cd ~
+ 1869  git clone https://github.com/plerup/makeEspArduino.git
+ 1870  cd makeEspArduino/
+ 1871  ls
+ 1872  make -f makeEspArduino.mk DEMO=1 flash
+ 1873  ls
+ 1874  cd -
+ 1875  ls
+ 1876  cd sambashare/
+ 1877  ls
+ 1878  cd ArduinoMakefile/
+ 1879  ls
+ 1880  cd Arduino/
+ 1881  ls
+ 1882  cd ..
+ 1883  ls
+ 1884  mv Arduino esp8266
+ 1885  ls
+ 1886  cd esp8266/
+ 1887  ls
+ 1888  git checkout tags/3.0.0
+ 1889  git status
+ 1890  git submodule update --init
+ 1891  cd tools
+ 1892  ls
+ 1893  python3 get.py
+ 1894  ls
+ 1895  cd ~
+ 1896  ls
+ 1897  cd Arduino/
+ 1898  ls
+ 1899  cd ..
+ 1900  ls
+ 1901  cd makeEspArduino/
+ 1902  ls
+ 1903  make -f makeEspArduino.mk ESP_ROOT=~/esp8266 DEMO=1 flash
+ 1904  ls
+ 1905  cd ../sambashare/ArduinoMakefile/esp8266/
+ 1906  ls
+ 1907  pwd
+ 1908  cd -
+ 1909  make -f makeEspArduino.mk ESP_ROOT=/home/praveenv/sambashare/ArduinoMakefile/esp8266 DEMO=1 flash
+ 1910  ls
+ 1911  cd ..
+ 1912  ls
+ 1913  cd makeEspArduino/
+ 1914  ls
+ 1915  cd ../sambashare/ArduinoMakefile/arduino-esp32/
+ 1916  pwd
+ 1917  cd -
+ 1918  make -f makeEspArduino.mk ESP_ROOT=/home/praveenv/sambashare/ArduinoMakefile/arduino-esp32 CHIP=esp32 install
+ 1919  ls
+ 1920  ls /home/praveenv/sambashare/ArduinoMakefile/arduino-esp32
+ 1921  make -f makeEspArduino.mk ESP_ROOT=/home/praveenv/sambashare/ArduinoMakefile/arduino-esp32 CHIP=esp32 install
+ 1922  ls
+ 1923  cd -
+ 1924  ls
+ 1925  make -f makeEspArduino.mk ESP_ROOT=~/esp32 CHIP=esp32 installmake -f makeEspArduino.mk ESP_ROOT=~/esp32 CHIP=esp32 install
+ 1926  make -f makeEspArduino.mk ESP_ROOT./ CHIP=esp32 install
+ 1927  make -f makeEspArduino.mk ESP_ROOT=./ CHIP=esp32 install
+ 1928  make -f makeEspArduino.mk ESP_ROOT=~/makeEspArduino/ CHIP=esp32 install
+ 1929  ks
+ 1930  l
+ 1931  s
+ 1932  cd -
+ 1933  ls
+ 1934  pwd
+ 1935  ls
+ 1936  make -f makeEspArduino.mk ESP_ROOT=/home/praveenv/sambashare/ArduinoMakefile/arduino-esp32 CHIP=esp32 install
+ 1937  pwd
+ 1938  ls
+ 1939  cd ..
+ 1940  ls
+ 1941  ls makeEspArduino/README.md 
+ 1942  vim makeEspArduino/README.md 
+ 1943  ls
+ 1944  # My makefile
+ 1945  SKETCH = $(ESP_ROOT)/libraries/Ticker/examples/TickerBasic/TickerBasic.ino
+ 1946  UPLOAD_PORT = /dev/ttyUSB1
+ 1947  BOARD = esp210
+ 1948  ls
+ 1949  cd sambashare/
+ 1950  s
+ 1951  ls
+ 1952  cd Door_working_set/
+ 1953  ls
+ 1954  cd Example/
+ 1955  ls
+ 1956  vim Makefile 
+ 1957  ls
+ 1958  cd ..
+ 1959  ls
+ 1960  mv Example/
+ 1961  ls
+ 1962  mv Example ArduinoMakefile
+ 1963  cd ArduinoMakefile/
+ 1964  ls
+ 1965  cd ..
+ 1966  ls
+ 1967  vim ReadMe 
+ 1968  ls
+ 1969  vim ArduinoMakefile/Makefile 
+ 1970  ls
+ 1971  vim ReadMe 
+ 1972  vim ArduinoMakefile/flash/ReadMe 
+ 1973  ls
+ 1974  cd ..
+ 1975  ls
+ 1976  mkdir MQTT_RPI_NODEMCU
+ 1977  cd MQTT_RPI_NODEMCU/
+ 1978  ls
+ 1979  git clone https://github.com/uzairaj/IoT-Projects.git
+ 1980  ls
+ 1981  cd IO
+ 1982  ls
+ 1983  cd IoT-Projects/
+ 1984  ls
+ 1985  cd Send-Data-
+ 1986  ls
+ 1987  cd Send-Data-Esp-to-Rpi/
+ 1988  s
+ 1989  ls
+ 1990  vim readme.txt 
+ 1991  ls
+ 1992  vim dht_sensor.ino 
+ 1993  ls
+ 1994  ifconfig 
+ 1995  ls
+ 1996  vim server.py 
+ 1997  ifconfig 
+ 1998  poweroff
+ 1999  ls
+ 2000  cd sambashare/Door_working_set/MQTT/Producer/
+ 2001  ls
+ 2002  vim Producer.ino 
+ 2003  ls
+ 2004  cd ..
+ 2005  ls
+ 2006  vim New\ Text\ Document.txt 
+ 2007  ls
+ 2008  cd Bkup/
+ 2009  ls
+ 2010  vim Producer/Producer.ino 
+ 2011  ls
+ 2012  cd ..
+ 2013  ls
+ 2014  cd Producer/
+ 2015  ls
+ 2016  vim Producer.ino 
+ 2017  ls
+ 2018  cd ..
+ 2019  ls
+ 2020  cd Subscriber/
+ 2021  ls
+ 2022  vim Subscriber.ino 
+ 2023  ls
+ 2024  vim Subscriber.ino 
+ 2025  ls
+ 2026  cd ..
+ 2027  ls
+ 2028  cd Producer/
+ 2029  ls
+ 2030  vim Producer.ino 
+ 2031  ls
+ 2032  vim Producer.ino 
+ 2033  ls
+ 2034  cd ..
+ 2035  ls
+ 2036  cd ..
+ 2037  ls
+ 2038  cd ..
+ 2039  ls
+ 2040  mkdir git
+ 2041  ls
+ 2042  cd git/
+ 2043  ls
+ 2044  git clone https://github.com/premembeddedcodedev/IOT.git
+ 2045  ls
+ 2046  cp ../Door_working_set/MQTT/Producer/Producer.ino .
+ 2047  cp ../Door_working_set/MQTT/Subscriber/Subscriber.ino .
+ 2048  ls
+ 2049  cd IOT/
+ 2050  ls
+ 2051  mkdir MQTT
+ 2052  ls
+ 2053  cd MQTT/
+ 2054  ls
+ 2055  cp ../../Producer.ino .
+ 2056  cp ../../Subscriber.ino .
+ 2057  ls
+ 2058  vim Producer.ino 
+ 2059  ls
+ 2060  vim Producer.ino 
+ 2061  ls
+ 2062  vim Subscriber.ino 
+ 2063  ls
+ 2064  cd ..
+ 2065  ls
+ 2066  git status
+ 2067  git add .
+ 2068  git commit -am "Added Producer and Subscriber with JSON"
+ 2069  ls
+ 2070  git push -u origin master
+ 2071  git remote add origin https://github.com/premembeddedcodedev/IOT.git
+ 2072  git push origin main
+ 2073  ls
+ 2074  cd MQTT/
+ 2075  ls
+ 2076  vim ReadMe
+ 2077  git add .
+ 2078  git commit -am "Added ReadMe for the testing"
+ 2079  git push origin main
+ 2080  ls
+ 2081  cd ..
+ 2082  ls
+ 2083  mkdir NewFrameWork
+ 2084  ls
+ 2085  cp ../../Door_working_set/2.Send_to_mainNode . -rf
+ 2086  cp ../../Door_working_set/3.Nano_temp_Sensor/ . -rf
+ 2087  cp ../../Door_working_set/4.Nano_Display/ . -rf
+ 2088  cp ../../Door_working_set/5.Door_Sensor/ . -rf
+ 2089  cp ../../Door_working_set/mail/ . -rf
+ 2090  ls
+ 2091  vim mail/
+ 2092  vim mail/namedMesh.h 
+ 2093  vim mail/Base64.cpp 
+ 2094  vim mail/compile 
+ 2095  vim mail/
+ 2096  vim mail/mail.ino 
+ 2097  vim mail/Gsender.cpp 
+ 2098  vim mail/Makefile 
+ 2099  ls
+ 2100  cd mail/
+ 2101  ls
+ 2102  mv mail.ino 1.mail.ino 
+ 2103  ls
+ 2104  cd ..
+ 2105  ls
+ 2106  mv mail 1.mail
+ 2107  ls
+ 2108  cd 2.Send_to_mainNode/
+ 2109  ls
+ 2110  cd ..
+ 2111  ls
+ 2112  cd 2.Send_to_mainNode/
+ 2113  ls
+ 2114  vim 2.Send_to_mainNode.ino 
+ 2115  ls
+ 2116  vim changes.txt 
+ 2117  vim Makefile 
+ 2118  vim ReadMe 
+ 2119  ls
+ 2120  cd ..
+ 2121  ls
+ 2122  cd 3.Nano_temp_Sensor/
+ 2123  ls
+ 2124  vim 3.Nano_temp_Sensor.ino 
+ 2125  ls
+ 2126  cd ..
+ 2127  ls
+ 2128  cd 4.Nano_Display/
+ 2129  ls
+ 2130  vim 4.Nano_Display.ino 
+ 2131  ls
+ 2132  vim arduino-manifest.pl 
+ 2133  ls
+ 2134  cd ..
+ 2135  ls
+ 2136  cd 5.Door_Sensor/
+ 2137  ls
+ 2138  vim 5.Door_Sensor.ino
+ 2139  ls
+ 2140  vim ReadMe 
+ 2141  vim changes.txt 
+ 2142  ls
+ 2143  vim Makefile 
+ 2144  ls
+ 2145  cd ..
+ 2146  ls
+ 2147  cd 4.Nano_Display/
+ 2148  ls
+ 2149  vim Makefile 
+ 2150  ls
+ 2151  cd ..
+ 2152  ls
+ 2153  cd 3.Nano_temp_Sensor/
+ 2154  ls
+ 2155  vim 3.Nano_temp_Sensor.ino 
+ 2156  ls
+ 2157  cd ..
+ 2158  ls
+ 2159  git status
+ 2160  ls
+ 2161  cd NewFrameWork/
+ 2162  ls
+ 2163  cd ..
+ 2164  ls
+ 2165  cp 1.mail/ 2.Send_to_mainNode/ 3.Nano_temp_Sensor/ 4.Nano_Display/ 5.Door_Sensor/ NewFrameWork/
+ 2166  cp 1.mail/ 2.Send_to_mainNode/ 3.Nano_temp_Sensor/ 4.Nano_Display/ 5.Door_Sensor/ NewFrameWork/ -rf 
+ 2167  ls
+ 2168  rm 1.mail/ 2.Send_to_mainNode/ 3.Nano_temp_Sensor/ 4.Nano_Display/ 5.Door_Sensor/ 
+ 2169  rm 1.mail/ 2.Send_to_mainNode/ 3.Nano_temp_Sensor/ 4.Nano_Display/ 5.Door_Sensor/  -rf
+ 2170  ls
+ 2171  cd NewFrameWork/
+ 2172  ls
+ 2173  cd ..
+ 2174  ls
+ 2175  git status
+ 2176  git add .
+ 2177  git commit -a -m "NewFramework with Makefile"
+ 2178  git push origin main
+ 2179  ls
+ 2180  cp ../../Door_working_set/Makefile NewFrameWork/
+ 2181  cp ../../Door_working_set/ArduinoMakefile/ NewFrameWork/ -rf 
+ 2182  cp ../../Door_working_set/ReadMe NewFrameWork/
+ 2183  ls
+ 2184  git status
+ 2185  git add .
+ 2186  git commit -am "added ArduinoMakefile and ReadMe"
+ 2187  git push origin main
+ 2188  ls
+ 2189  ls -al
+ 2190  ls
+ 2191  git config --global credential.helper cache
+ 2192  vim Relay_with_webbrowserZ/
+ 2193  ls
+ 2194  git config --global --unset credential.helper
+ 2195  git config --global credential.helper cache
+ 2196  git pull
+ 2197  ls
+ 2198  vim DoorEventZ/
+ 2199  ls
+ 2200  clear
+ 2201  ls
+ 2202  ;s
+ 2203  ls
+ 2204  vim Relay_with_webbrowserZ/
+ 2205  ;s
+ 2206  ls
+ 2207  vim README.md 
+ 2208  git status
+ 2209  git add .
+ 2210  git commit -am "Added ReadMe for the Arduino Makefile"
+ 2211  git push origin main
+ 2212  ls
+ 2213  git config --global credential.helper cache
+ 2214  git config --list
+ 2215  git config --global --unset credential.helper
+ 2216  git config --global credential.helper cache
+ 2217  git config --global credential.helper 'cache --timeout 28800'
+ 2218  git config --global credential.helper store
+ 2219  ~/.git-credentials
+ 2220  ls 
+ 2221  ls ~/.git-credentials
+ 2222  vim ~/.git-credentials
+ 2223  git push origin main
+ 2224  vim ~/.git-credentials
+ 2225  vim Relay_with_webbrowserZ/
+ 2226  cd NewFrameWork/
+ 2227  ls
+ 2228  vim ReadMe 
+ 2229  vim FIXME
+ 2230  git add .
+ 2231  git commit -am "Added FIXME"
+ 2232  git push origin main
+ 2233  ls
+ 2234  lsusb
+ 2235  ls
+ 2236  cd ..
+ 2237  ls
+ 2238  cd MQTT/
+ 2239  ls
+ 2240  vim ReadMe 
+ 2241  git add .
+ 2242  git commit -a -m 
+ 2243  git commit -a -m "Added arch and ip details"
+ 2244  git push origin main
+ 2245  ls
+ 2246  vim Producer.ino 
+ 2247  ls
+ 2248  ;s
+ 2249* history 
+ 2250  history > p
