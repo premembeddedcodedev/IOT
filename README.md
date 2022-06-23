@@ -152,7 +152,7 @@ yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need 
                                    IRAM                                                                           vt=iram
 
       16. arduino-cli sketch new <sample_prog_name>
-      17. Other References for compilation: https://opensourcelibs.com/lib/esp8266-arduino-makefile
+      17. [NewFrameWork/ArdunioMakefile for the same]Other References for compilation: https://opensourcelibs.com/lib/esp8266-arduino-makefile
             a. sudo apt-get update
             b. sudo apt-get install arduino-mk
             c. Link library ln -s /usr/share/arduino/Arduino.mk
