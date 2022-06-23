@@ -1,0 +1,2 @@
+make FQBN=arduino:avr:nano
+#arduino-cli compile --fqbn arduino:avr:nano
