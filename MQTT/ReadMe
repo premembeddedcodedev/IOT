@@ -1,0 +1,20 @@
+Follow the instructions:
+http://www.steves-internet-guide.com/install-mosquitto-linux/
+
+Follow the
+https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-connection
+
+	$ cat /etc/mosquitto/conf.d/standard.conf
+	listener 1883
+	protocol mqtt
+	allow_anonymous true
+
+	$ sudo systemctl restart mosquitto.service
+
+
+Working without username and password:
+	mosquitto_sub -h 192.168.29.32 -t "outTopic"
+	mosquitto_pub -t 'inTopic' -m 'Praveen'
+
+example:
+	mosquitto_sub -u username -P password -t newtopic/test -h test.mosquitto.org
