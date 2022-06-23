@@ -1,0 +1,7 @@
+1. Need to resolve the issue with global makefile is not
+keeping the binaries on to sub folders
+
+2. Need to flash on to the target  - this has issues that
+always taking from /tmp/Arduino folder
+
+3. 
