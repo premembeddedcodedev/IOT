@@ -1,8 +1,14 @@
 BOARD?=esp8266:esp8266:nodemcuv2
 PORT?=/dev/ttyUSB0
-.PHONY: default all flash clean
 
-default: lib-install all flash clean
+.PHONY: default compile
+
+default: compile
+
+all: req-libs-header lib-install compile flash clean
+
+req-libs-header:
+	arduino-manifest.pl  -r -b $(BOARD) *.ino *.h
 
 lib-install:
 	arduino-cli lib list
@@ -14,7 +20,7 @@ lib-install:
 lint:
 	cpplint --extentions=ino --filter=-legal/copyright *.ino
 
-all:
+compile:
 	arduino-cli compile --fqbn $(BOARD) ./
 
 flash:

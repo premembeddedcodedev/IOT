@@ -1,9 +1,22 @@
 BOARD?=esp8266:esp8266:nodemcuv2
+
 PORT?=/dev/ttyUSB0
 
-.PHONY: default all flash clean
+#TODO: Need to see why .PHONY required here....
 
-default: lib-install all flash clean
+.PHONY: default
+
+default: req-libs-header
+	@echo "===========In Default build============="
+
+#all: req-libs-header lib-install compile flash clean
+
+req-libs-header:
+	# '@' sign before echo is not visible in print - print will be included echo if we give direct echo " "
+	@echo "===== Dependent files as per header ======"
+	# Calling like "echo" below also dont print "echo" command - its same as above
+	echo Dependent files as per header
+	arduino-manifest.pl  -r -b $(BOARD) *.ino *.h
 
 lib-install:
 	arduino-cli lib list
@@ -15,7 +28,7 @@ lib-install:
 lint:
 	cpplint --extentions=ino --filter=-legal/copyright *.ino
 
-all:
+compile:
 	arduino-cli compile --fqbn $(BOARD) ./
 
 flash:

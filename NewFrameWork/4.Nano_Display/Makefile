@@ -1,8 +1,15 @@
 BOARD?=arduino:avr:nano
 PORT?=/dev/ttyUSB0
-.PHONY: default all flash clean
 
-default: lib-install all flash clean
+.PHONY: all
+
+default: compile
+
+all: req-libs-header lib-install compile flash clean
+
+
+req-libs-header:
+	arduino-manifest.pl  -r -b $(BOARD) *.ino *.h
 
 lib-install:
 	arduino-cli lib list
