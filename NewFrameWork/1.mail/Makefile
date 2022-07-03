@@ -6,7 +6,7 @@ PORT?=/dev/ttyUSB0
 
 .PHONY: default
 
-default: req-libs-header
+default: compile
 	@echo "===========In Default build============="
 
 #all: req-libs-header lib-install compile flash clean

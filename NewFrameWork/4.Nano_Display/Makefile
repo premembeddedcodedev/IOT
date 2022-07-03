@@ -1,7 +1,7 @@
 BOARD?=arduino:avr:nano
 PORT?=/dev/ttyUSB0
 
-.PHONY: all
+.PHONY: compile
 
 default: compile
 
@@ -26,7 +26,7 @@ lib-install:
 lint:
 	cpplint --extentions=ino --filter=-legal/copyright *.ino
 
-all:
+compile:
 	arduino-cli compile --fqbn $(BOARD) ./
 
 flash:
