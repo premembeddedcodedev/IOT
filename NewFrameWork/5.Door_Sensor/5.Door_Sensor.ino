@@ -6,6 +6,8 @@
 #define MESH_PASSWORD   "mcupasswd"
 #define MESH_PORT       5555
 
+#define MYDEBUG 1
+
 #define FIRST_MAIN_DOOR_EVENT 0x01
 #define FIRST_MAIN_NORTH_DOOR_EVENT 0x02
 #define SECOND_NORTH_DOOR_EVENT 0x04
@@ -83,6 +85,7 @@ int NodeNumber = 3;
 
 String readings;
 
+
 void sendMessage(); 
 String SendDoorConfigs(); 
 
@@ -159,23 +162,9 @@ String DoorgetReadings()
 
 void sendMessage() 
 {
-	if (digitalRead(D5) == 1){
-#ifdef MYDEBUG
-		Serial.println("Door is open");
-#endif
-#ifdef DOOR_CLIENT
-		event = FIRST_MAIN_DOOR_EVENT;
-#elif DOOR_CLIENT2
-		event = FIRST_MAIN_NORTH_DOOR_EVENT;
-#else
-		event = SECOND_NORTH_DOOR_EVENT;
-#endif
-		String msg = DoorgetReadings();
-		mesh.sendSingle(to, msg);
-	} else {
-		String msg = SendDoorConfigs();
-		mesh.sendSingle(to, msg);
-	}
+	DoorClientFillData();
+	String msg = SendDoorConfigs();
+	mesh.sendSingle(to, msg);
 }
 
 void ExtractMeshNodeData(int SensorBits)
@@ -254,25 +243,25 @@ void mesh_config()
 void DoorClientFillData()
 {
 	DoorClient.Temparature = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.print("Temperature: ");
 	Serial.print(DoorClient.Temparature);
 	Serial.println(" C");
 #endif
 	DoorClient.Humidity = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.print("Humidity: ");
 	Serial.print(DoorClient.Humidity);
 	Serial.println(" %");
 #endif
 	DoorClient.Pressure = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.print("Pressure: ");
 	Serial.print(DoorClient.Pressure);
 	Serial.println(" hpa");
 #endif
 	DoorClient.Altitude = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.print("Altitude: ");
 	Serial.print(DoorClient.Altitude);
 	Serial.println(" hpa");
@@ -280,37 +269,37 @@ void DoorClientFillData()
 	Serial.print("SpeakerStatus: ");
 #endif
 	DoorClient.SpeakerStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.SpeakerStatus);
 	Serial.print("LightStatus: ");
 #endif
 	DoorClient.LightStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.LightStatus);
 	Serial.print("MovmentStatus: ");
 #endif
 	DoorClient.MovementStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.MovementStatus);
 	Serial.print("CapturePhotos: ");
 #endif
 	DoorClient.CapturePhotos = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.CapturePhotos);
 	Serial.print("NoiseStatus: ");
 #endif
 	DoorClient.NoiseStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.NoiseStatus);
 	Serial.print("GasStatus: ");
 #endif
 	DoorClient.GasStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.GasStatus);
 	Serial.print("AirQualityStatus: ");
 #endif
 	DoorClient.AirQualityStatus = random(20);
-#ifdef MYDEBUG
+#ifdef MYDEBUG_2
 	Serial.println(DoorClient.AirQualityStatus);
 #endif
 }
@@ -329,155 +318,167 @@ void setup()
 
 void loop() {
 	mesh.update();
+	if (digitalRead(D5) == 1){
+#ifdef MYDEBUG
+		Serial.println("Door is open");
+#endif
+#ifdef DOOR_CLIENT
+		event = FIRST_MAIN_DOOR_EVENT;
+#elif DOOR_CLIENT2
+		event = FIRST_MAIN_NORTH_DOOR_EVENT;
+#else
+		event = SECOND_NORTH_DOOR_EVENT;
+#endif
+		String msg = DoorgetReadings();
+		mesh.sendSingle(to, msg);
+	} else {
 
+		if(SoundEnable == 0) {
+#ifdef MYDEBUG
+			Serial.println("Sound is disabled as per instructions.....");
+#endif
+			SoundEnable = 90; // 90 Represents Disable
+			SpeakerStatus = 90; // 90 Represents Disable
+		}
+		if(SoundEnable == 1) {
+#ifdef MYDEBUG
+			Serial.println("Sound is enabled as per instructions.....");
+#endif
+			SoundEnable = 0;
+			SpeakerStatus = 1;
+			sendMessage();
+		}
 
-	if(SoundEnable == 0) {
+		if(TempSensorEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Sound is disabled as per instructions.....");
+			Serial.println("Disable to Send Temp Readings...");
 #endif
-		SoundEnable = 90; // 90 Represents Disable
-		SpeakerStatus = 90; // 90 Represents Disable
-	}
-	if(SoundEnable == 1) {
-#ifdef MYDEBUG
-		Serial.println("Sound is enabled as per instructions.....");
-#endif
-		SoundEnable = 0;
-		SpeakerStatus = 1;
-		sendMessage();
-	}
+			TempSensorEnable = 90; // 90 Represents Disable
+			TempSensorStatus = 90; // 90 Represents Disable
+		}
 
-	if(TempSensorEnable == 0) {
+		if(TempSensorEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send Temp Readings...");
+			Serial.println("Ready to Send Temp Readings...");
 #endif
-		TempSensorEnable = 90; // 90 Represents Disable
-		TempSensorStatus = 90; // 90 Represents Disable
-	}
+			TempSensorEnable = 0;
+			TempSensorStatus = 1;
+			sendMessage();
+		}
 
-	if(TempSensorEnable == 1) {
+		if(HealthEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send Temp Readings...");
+			Serial.println("Disable to Send HealthStatus Readings...");
 #endif
-		TempSensorEnable = 0;
-		TempSensorStatus = 1;
-		sendMessage();
-	}
+			HealthEnable = 90; // 90 Represents Disable
+			HealthStatus = 90; // 90 Represents Disable
+		}
 
-	if(HealthEnable == 0) {
+		if(HealthEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send HealthStatus Readings...");
+			Serial.println("Ready to Send HealthStatus Readings...");
 #endif
-		HealthEnable = 90; // 90 Represents Disable
-		HealthStatus = 90; // 90 Represents Disable
-	}
+			HealthEnable = 0;
+			HealthStatus = 1;
+			sendMessage();
+		}
+		if(LightEnable == 0) {
+#ifdef MYDEBUG
+			Serial.println("Disable to Send LightStatus Readings...");
+#endif
+			LightEnable = 90; // 90 Represents Disable
+			LightStatus = 90; // 90 Represents Disable
+		}
 
-	if(HealthEnable == 1) {
+		if(LightEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send HealthStatus Readings...");
+			Serial.println("Ready to Send LightStatus Readings...");
 #endif
-		HealthEnable = 0;
-		HealthStatus = 1;
-		sendMessage();
-	}
-	if(LightEnable == 0) {
+			LightEnable = 0;
+			LightStatus = 1;
+			sendMessage();
+		}
+		if(MovementEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send LightStatus Readings...");
+			Serial.println("Disable to Send MovementStatus Readings...");
 #endif
-		LightEnable = 90; // 90 Represents Disable
-		LightStatus = 90; // 90 Represents Disable
-	}
+			MovementEnable = 90; // 90 Represents Disable
+			MovementStatus = 90; // 90 Represents Disable
+		}
 
-	if(LightEnable == 1) {
+		if(MovementEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send LightStatus Readings...");
+			Serial.println("Ready to Send MovementStatus Readings...");
 #endif
-		LightEnable = 0;
-		LightStatus = 1;
-		sendMessage();
-	}
-	if(MovementEnable == 0) {
+			MovementEnable = 0;
+			MovementStatus = 1;
+			sendMessage();
+		}
+		if(CaptureEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send MovementStatus Readings...");
+			Serial.println("Disable to Send CaptureStatus Readings...");
 #endif
-		MovementEnable = 90; // 90 Represents Disable
-		MovementStatus = 90; // 90 Represents Disable
-	}
+			CaptureEnable = 90; // 90 Represents Disable
+			CaptureStatus = 90; // 90 Represents Disable
+		}
 
-	if(MovementEnable == 1) {
+		if(CaptureEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send MovementStatus Readings...");
+			Serial.println("Ready to Send CaptureStatus Readings...");
 #endif
-		MovementEnable = 0;
-		MovementStatus = 1;
-		sendMessage();
-	}
-	if(CaptureEnable == 0) {
+			CaptureEnable = 0;
+			CaptureStatus = 1;
+			sendMessage();
+		}
+		if(NoiseEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send CaptureStatus Readings...");
+			Serial.println("Disable to Send NoiseStatus Readings...");
 #endif
-		CaptureEnable = 90; // 90 Represents Disable
-		CaptureStatus = 90; // 90 Represents Disable
-	}
+			NoiseEnable = 90; // 90 Represents Disable
+			NoiseStatus = 90; // 90 Represents Disable
+		}
 
-	if(CaptureEnable == 1) {
+		if(NoiseEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send CaptureStatus Readings...");
+			Serial.println("Ready to Send NoiseStatus Readings...");
 #endif
-		CaptureEnable = 0;
-		CaptureStatus = 1;
-		sendMessage();
-	}
-	if(NoiseEnable == 0) {
+			NoiseEnable = 0;
+			NoiseStatus = 1;
+			sendMessage();
+		}
+		if(GasEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send NoiseStatus Readings...");
+			Serial.println("Disable to Send GasStatus Readings...");
 #endif
-		NoiseEnable = 90; // 90 Represents Disable
-		NoiseStatus = 90; // 90 Represents Disable
-	}
+			GasEnable = 90; // 90 Represents Disable
+			GasStatus = 90; // 90 Represents Disable
+		}
 
-	if(NoiseEnable == 1) {
+		if(GasEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send NoiseStatus Readings...");
+			Serial.println("Ready to Send GasStatus Readings...");
 #endif
-		NoiseEnable = 0;
-		NoiseStatus = 1;
-		sendMessage();
-	}
-	if(GasEnable == 0) {
+			GasEnable = 0;
+			GasStatus = 1;
+			sendMessage();
+		}
+		if(AirQualityEnable == 0) {
 #ifdef MYDEBUG
-		Serial.println("Disable to Send GasStatus Readings...");
+			Serial.println("Disable to Send AQStatus Readings...");
 #endif
-		GasEnable = 90; // 90 Represents Disable
-		GasStatus = 90; // 90 Represents Disable
-	}
+			AirQualityEnable = 90; // 90 Represents Disable
+			AirQualityStatus = 90; // 90 Represents Disable
+		}
 
-	if(GasEnable == 1) {
+		if(AirQualityEnable == 1) {
 #ifdef MYDEBUG
-		Serial.println("Ready to Send GasStatus Readings...");
+			Serial.println("Ready to Send AQStatus Readings...");
 #endif
-		GasEnable = 0;
-		GasStatus = 1;
-		sendMessage();
+			AirQualityEnable = 0;
+			AirQualityStatus = 1;
+			sendMessage();
+		}
 	}
-	if(AirQualityEnable == 0) {
-#ifdef MYDEBUG
-		Serial.println("Disable to Send AQStatus Readings...");
-#endif
-		AirQualityEnable = 90; // 90 Represents Disable
-		AirQualityStatus = 90; // 90 Represents Disable
-	}
-
-	if(AirQualityEnable == 1) {
-#ifdef MYDEBUG
-		Serial.println("Ready to Send AQStatus Readings...");
-#endif
-		AirQualityEnable = 0;
-		AirQualityStatus = 1;
-		sendMessage();
-	}
-
-	DoorClientFillData();
 
 	delay(2000);
 }

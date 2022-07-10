@@ -123,7 +123,7 @@ void KeepAlive() {
 
 void receivedCallback( uint32_t from, String &msg )
 {
-#ifdef DEBUG_LEVEL_2
+#ifdef DEBUG
 	Serial.printf("Received from %u msg=%s\n", from, msg.c_str());
 #endif
 	
@@ -279,17 +279,17 @@ void receive_data_from_mesh()
 	uint8_t i = 0;
 	if (nrf24.waitAvailableTimeout(1000)){  
 		if (nrf24.recv(buf, &len)){
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
 			Serial.print("got message: ");
 			Serial.println(len);
 #endif
 			ExtractEmailNodeData();
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
 			memcpy((uint8_t *)&ClientData, buf, sizeof(struct message));
 			debug_prints();
 			send_to_master();
 #endif
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
 			i = 0;
 			while(i<len) {
 				Serial.print(buf[i]);
@@ -386,7 +386,7 @@ void nrf_config()
 void setup()
 {
 	Serial.begin(9600);
-	Serial.print("Mesh Trasceiver Started, ID: ");
+	Serial.print("2.Mesh Trasceiver Started, ID: ");
 	Serial.println(deviceID);
 	while (!Serial); 
 	nrf_config();

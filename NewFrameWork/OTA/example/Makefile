@@ -29,11 +29,25 @@ lint:
 	cpplint --extentions=ino --filter=-legal/copyright *.ino
 
 compile:
-	arduino-cli compile --fqbn $(BOARD) ./
+	arduino-cli compile --fqbn $(BOARD) ./ --output-dir ./out
 
 flash:
 	arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
 
 clean:
-	rm -f .*.hex
-	rm -f .*.elf
+	rm -rf out
+
+ota:
+	@PLAT_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.platform.path' | awk -F= '{print $$2}'` ; \
+	   PY_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.tools.python3.path' | awk -F= '{print $$2}'` ; \
+	IOT_IP=`avahi-browse _arduino._tcp --resolve --parsable --terminate|grep -i ';$(IOT_NAME);'|grep ';$(OTA_PORT);'| awk -F\; '{print $$8}'|head -1`; \
+	BINFILE=$(wildcard $(BUILD_DIR)/$(SRC)*bin); \
+	echo "PLAT_PATH  is [$$PLAT_PATH]" ; \
+	echo "PY_PATH:   is [$$PY_PATH]"  ; \
+	echo "IOT_IP:    is [$$IOT_IP]"   ; \
+	echo "BINFILE:   is [$$BINFILE]"  ; \
+	if [ "$$IOT_IP" = "" ] ; \
+	then echo "Unable to find device IP. Check that the IOT_NAME environment variable is correctly set. Use 'make find' to search devices"; \
+	else echo "---> Uploading Over The Air"; \
+	$$PY_PATH/python3 $$PLAT_PATH/tools/espota.py -i $$IOT_IP -p $(OTA_PORT) --auth=$(OTA_PASS) -f $$BINFILE ;\
+	fi
