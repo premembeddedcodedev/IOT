@@ -4,28 +4,16 @@
 #include <ArduinoOTA.h>
 
 // Replace with your network credentials
-const char* ssid = "SHSIAAP2";
-const char* password = "prem@123";
+const char* ssid = "XXXXX";
+const char* password = "XXXX";
 
-void setup() {
-	Serial.begin(9600);
-	Serial.println("New Booting");
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(ssid, password);
+void ota_config()
+{
 	while (WiFi.waitForConnectResult() != WL_CONNECTED) {
 		Serial.println("Connection Failed! Rebooting...");
 		delay(5000);
 		ESP.restart();
 	}
-
-	// Port defaults to 8266
-	// ArduinoOTA.setPort(8266);
-
-	// Hostname defaults to esp8266-[ChipID]
-	// ArduinoOTA.setHostname("myesp8266");
-
-	// No authentication by default
-	// ArduinoOTA.setPassword((const char *)"123");
 
 	ArduinoOTA.onStart([]() {
 			Serial.println("Start");
@@ -45,6 +33,25 @@ void setup() {
 			else if (error == OTA_END_ERROR) Serial.println("End Failed");
 			});
 	ArduinoOTA.begin();
+}
+
+void setup() {
+	Serial.begin(9600);
+	Serial.println("New tech Booting");
+	WiFi.mode(WIFI_STA);
+	WiFi.begin(ssid, password);
+
+	// Port defaults to 8266
+	// ArduinoOTA.setPort(8266);
+
+	// Hostname defaults to esp8266-[ChipID]
+	// ArduinoOTA.setHostname("myesp8266");
+
+	// No authentication by default
+	// ArduinoOTA.setPassword((const char *)"123");
+
+	ota_config();
+
 	Serial.println("Ready");
 	Serial.print("IP address: ");
 	Serial.println(WiFi.localIP());
