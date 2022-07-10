@@ -1,17 +1,11 @@
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com
-  Arduino IDE example: Examples > Arduino OTA > BasicOTA.ino
-*********/
-
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
 // Replace with your network credentials
-const char* ssid = "SHSIAAP2";
-const char* password = "prem@123";
+const char* ssid = "XXXXXX";
+const char* password = "XXXXX";
 
 const int ESP_BUILTIN_LED = 2;
 
