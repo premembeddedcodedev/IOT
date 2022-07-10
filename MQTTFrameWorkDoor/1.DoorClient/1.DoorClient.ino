@@ -7,8 +7,8 @@
 
 // Update these with values suitable for your network.
 
-const char* ssid = "XXXX";
-const char* password = "XXXXXXXXX";
+const char* ssid = "TP-Link_F524";
+const char* password = "XXXXXXXXXXXX";
 const char* mqtt_server = "192.168.29.65";
 
 WiFiClient espClient;
