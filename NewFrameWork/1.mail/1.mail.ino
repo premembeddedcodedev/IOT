@@ -214,6 +214,7 @@ void setup()
 	connection_state = WiFiConnect();
 	if(!connection_state)  // if not connected to WIFI
 		Awaits();          // constantly trying to connect
+	ota_config();
 	CustomInfo(); // uncomment this line if you want to send the email using the custom information which are already set in the code; and comment the above line.
 }
 
