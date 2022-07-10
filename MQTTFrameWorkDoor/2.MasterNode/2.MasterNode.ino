@@ -15,8 +15,8 @@
 /*
  * Your WiFi config here
  */
-char ssid[] = "SHSIAAP2";     // your network SSID (name)
-char pass[] = "prem@123"; // your network password
+char ssid[] = "XXXXX";     // your network SSID (name)
+char pass[] = "XXXXXXXX"; // your network password
 bool WiFiAP = false;      // Do yo want the ESP as AP?
 
 /*
