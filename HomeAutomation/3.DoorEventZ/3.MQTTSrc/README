@@ -1,0 +1,4 @@
+1. systemctl stop mosquitto.service
+2. netstat -at ==> to see 1883 is visible in this list
+3. systemctl start mosquitto.service
+4. https://gist.github.com/MohamedAlaa/2961058
