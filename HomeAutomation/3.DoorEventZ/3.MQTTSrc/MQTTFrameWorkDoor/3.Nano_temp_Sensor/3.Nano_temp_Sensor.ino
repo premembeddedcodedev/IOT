@@ -1,3 +1,5 @@
+#include <Arduino_JSON.h>
+#include <ArduinoJson.h>
 #include <RH_NRF24.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -68,7 +70,7 @@ void setup()
 {
 	Wire.begin(8);               
 	Serial.begin(9600);
-	Serial.println("NRFSENDI2CSEND....");
+	Serial.println("NRF Send I2C send Data....");
 	nrf_config();
 	tempsensor_config();
 }
@@ -83,16 +85,39 @@ void event_send()
 	nrf24.send(data, 2);
 	nrf24.waitPacketSent();
 }
+
+void i2c_transfer()
+{
+	char out[128];
+	StaticJsonDocument<256> doc;
+	doc["sensor"] = "Door";
+	doc["time"] = random(20);
+	doc["Value"] = 4;
+	int b = serializeJson(doc, out);
+	Wire.beginTransmission(8); // transmit to device #8
+	Wire.write(out, sizeof(30));
+	Wire.endTransmission();    // stop transmitting
+}
+
 void i2c_send()
 {
+	printValues();
 	ClientData.MsgID = random(20);
 	ClientData.DoorClient = random(20);
 	ClientData.DoorStatus = random(20);
 	ClientData.SpeakerStatus = random(20);
-	//  sprintf(ClientData.Temparature, "%d", (int)temp);
-	//  sprintf(ClientData.Pressure, "%d", (int)pres);
-	//  sprintf(ClientData.Altitude, "%d", (int)alt);
-	//  sprintf(ClientData.Humidity, "%d", (int)hum);
+	sprintf(ClientData.Temparature, "%d", (int)temp);
+	//Serial.print("Writing size and Data : ");
+	//Serial.print(ClientData.Temparature);
+	sprintf(ClientData.Pressure, "%d", (int)pres);
+	//Serial.print("Writing size and Data : ");
+	//Serial.print(ClientData.Pressure);
+	sprintf(ClientData.Altitude, "%d", (int)alt);
+	//Serial.print("Writing size and Data : ");
+	//Serial.print(ClientData.Altitude);
+	sprintf(ClientData.Humidity, "%d", (int)hum);
+	//Serial.print("Writing size and Data : ");
+	//Serial.print(ClientData.Humidity);
 	Serial.print("Writing size and Data : ");
 	Serial.println(sizeof(ClientData));
 	Serial.print("MsgID: ");
@@ -104,16 +129,16 @@ void i2c_send()
 	Serial.print("SpeakerStatus: ");
 	Serial.println(ClientData.SpeakerStatus);
 	Serial.print("PTemparature: ");
-	//  sscanf(ClientData.Temparature, "%d", &ClientData.TemparatureF);
+	sscanf(ClientData.Temparature, "%d", &ClientData.TemparatureF);
 	Serial.println(ClientData.TemparatureF);
 	Serial.print("PPressure: ");
-	//  sscanf(ClientData.Pressure, "%d", &ClientData.PressureF);
+	sscanf(ClientData.Pressure, "%d", &ClientData.PressureF);
 	Serial.println(ClientData.PressureF);
 	Serial.print("PAltitude: ");
-	//  sscanf(ClientData.Altitude, "%d", &ClientData.AltitudeF);
+	sscanf(ClientData.Altitude, "%d", &ClientData.AltitudeF);
 	Serial.println(ClientData.AltitudeF);
 	Serial.print("PHumidity: ");
-	//  sscanf(ClientData.Humidity, "%d", &ClientData.HumidityF);
+	sscanf(ClientData.Humidity, "%d", &ClientData.HumidityF);
 	Serial.println(ClientData.HumidityF);  
 	Serial.println("\n--------------Data Sent perfect--------------\n");
 	Serial.println();
@@ -125,17 +150,16 @@ void i2c_send()
 void receive_data_from_mesh()
 {
 	uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
+
 	uint8_t len = sizeof(struct message);
 	uint8_t i = 0;
-	if (nrf24.waitAvailableTimeout(3000)){  
+	if (nrf24.waitAvailableTimeout(5000)){  
 		if (nrf24.recv(buf, &len)){
-
 			Serial.print("got message: ");
 			Serial.println(len);
 			//memcpy((uint8_t *)&ClientData, buf, sizeof(struct message));
 			//debug_prints();
 			//Send_Data_to_Display_Client();
-#define DEBUG 1
 #ifdef DEBUG
 			i = 0;
 			while(i<len) {
@@ -149,7 +173,7 @@ void receive_data_from_mesh()
 				Serial.print("i2c message: ");
 				Serial.println(buf[0]);
 				Wire.beginTransmission(8); // transmit to device #8
-				Wire.write((uint8_t *)&buf[0], 1);
+				Wire.write(buf, 1);
 				Wire.endTransmission(); 
 			}
 			memset(buf, 0, sizeof(buf));    
@@ -167,6 +191,8 @@ void receive_data_from_mesh()
 
 void loop() {
 	receive_data_from_mesh();
+	delay(5000);
+	i2c_send();
 }
 
 void printValues() {
@@ -174,7 +200,7 @@ void printValues() {
 	pres = (bme.readPressure() / 100.0F);
 	alt = bme.readAltitude(SEALEVELPRESSURE_HPA);
 	hum = bme.readHumidity();
-
+#if 0
 	Serial.print("Temperature = ");
 	Serial.print(temp);
 	Serial.println(" °C");
@@ -192,4 +218,5 @@ void printValues() {
 	Serial.println(" %");
 
 	Serial.println();
+#endif
 }

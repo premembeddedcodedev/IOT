@@ -86,9 +86,7 @@ bool WiFiAP = false;      // Do yo want the ESP as AP?
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
 void Ciritical_Door_event()
 {
-#ifdef DEBUG_LEVEL
 	Serial.println("Sending to gateway");
-#endif
 	nrf24.send((uint8_t *)&ClientData.DoorStatus, 4);
 	nrf24.waitPacketSent();
 }
