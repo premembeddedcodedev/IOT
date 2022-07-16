@@ -1,1 +1,3 @@
 1. change the IP address in Makefile
+2. python espota.py -d  -i 10.0.0.106 -f d1-helsinki-tram-times.ino.d1_mini.bin
+3. https://blog.stigok.com/2018/06/12/esp8266-ota-updates-command-line.html
