@@ -35,3 +35,5 @@ producer ---> Broker ---> Consumer
 
 127.0.0.1 is always same as your IP address - loopback this will work instead of giving
 hardware ip address
+own implementation:
+https://codepr.github.io/blog/
