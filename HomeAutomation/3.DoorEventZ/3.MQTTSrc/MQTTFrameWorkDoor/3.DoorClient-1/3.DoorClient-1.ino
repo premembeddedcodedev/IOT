@@ -4,11 +4,13 @@
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-
+#include "DHT.h"
+#define DHTPIN 2
+#define DHTTYPE DHT11
 // Update these with values suitable for your network.
-
+DHT dht(DHTPIN, DHTTYPE);
 const char* ssid = "TP-Link_F524";
-const char* password = "XXXXXXX";
+const char* password = "prem@123";
 const char* mqtt_server = "192.168.29.65";
 
 WiFiClient espClient;
@@ -18,6 +20,45 @@ unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE  (50)
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
+
+float h;
+float t;
+float f;
+float hif;
+float hic;
+
+void dht_sensor_data()
+{
+  h = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  t = dht.readTemperature();
+  // Read temperature as Fahrenheit (isFahrenheit = true)
+  f = dht.readTemperature(true);
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+
+  // Compute heat index in Fahrenheit (the default)
+  hif = dht.computeHeatIndex(f, h);
+  // Compute heat index in Celsius (isFahreheit = false)
+  hic = dht.computeHeatIndex(t, h, false);
+#if 0
+  Serial.print(F(" Humidity: "));
+  Serial.print(h);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(t);
+  Serial.print(F("C "));
+  Serial.print(f);
+  Serial.print(F("F  Heat index: "));
+  Serial.print(hic);
+  Serial.print(F("C "));
+  Serial.print(hif);
+  Serial.println(F("F"));
+#endif
+}
 
 void setup_wifi() {
 
@@ -125,6 +166,7 @@ void setup() {
 	ota_config();
 	client.setServer(mqtt_server, 1883);
 	client.setCallback(callback);
+	dht.begin();
 }
 
 void loop()
@@ -135,11 +177,17 @@ void loop()
 	}
 	client.loop();
 	if (digitalRead(14) == 1){
+		dht_sensor_data();
 		char out[128];
 		StaticJsonDocument<256> doc;
 		doc["sensor"] = "Door";
 		doc["time"] = random(20);
 		doc["Value"] = 4;
+		doc["Humidity"] = h;
+		doc["Temp"] = t;
+		doc["F"] = f;
+		doc["HIF"] = hif;
+		doc["HIC"] = hic;
 		int b = serializeJson(doc, out);
 		boolean rc = client.publish("DoorEvents", out); 
 	}

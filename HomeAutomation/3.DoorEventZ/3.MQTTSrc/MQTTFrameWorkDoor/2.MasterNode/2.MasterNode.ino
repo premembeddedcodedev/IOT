@@ -65,6 +65,11 @@ struct message {
 	uint8_t NoiseSensorEnable;
 	uint8_t GasSensorEnable;
 	uint8_t AirQualitySensorEnable;
+	float h;
+	float t;
+	float f;
+	float hif;
+	float hic;
 };
 
 struct message ClientData;
@@ -152,8 +157,24 @@ class myMQTTBroker: public uMQTTBroker
 			const char* sensor = doc["sensor"];
 			long time = doc["time"];
 			ClientData.DoorStatus = doc["Value"];
+			ClientData.h = doc["Humidity"];
+			ClientData.t = doc["Temp"];
+			ClientData.f = doc["F"];
+			ClientData.hif = doc["HIF"];
+			ClientData.hic = doc["HIC"];
 			Serial.print("Door Status Received as: ");
 			Serial.println(ClientData.DoorStatus);
+			Serial.print(F(" Humidity: "));
+			Serial.print(ClientData.h);
+			Serial.print(F("%  Temperature: "));
+			Serial.print(ClientData.t);
+			Serial.print(F("C "));
+			Serial.print(ClientData.f);
+			Serial.print(F("F  Heat index: "));
+			Serial.print(ClientData.hif);
+			Serial.print(F("C "));
+			Serial.print(ClientData.hic);
+			Serial.println(F("F"));
 #endif
 		}
 };
