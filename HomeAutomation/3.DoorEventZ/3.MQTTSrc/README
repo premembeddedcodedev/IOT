@@ -3,3 +3,4 @@
 3. systemctl start mosquitto.service
 4. https://gist.github.com/MohamedAlaa/2961058
 5. broker and pub and sub code :https://github.com/eclipse/mosquitto
+https://github.com/Elecrow-RD/Elecrow-LCD5 --> this is for touch but its not working - atleast cmpany name elecrow
