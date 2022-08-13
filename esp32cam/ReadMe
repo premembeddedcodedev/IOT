@@ -3,3 +3,4 @@
 3. choose 3.3v when uploading code
 4. choose 5v when it is running from ESP32
 
+Pyserial issue resolved by: sudo apt install python-is-python3
