@@ -1,0 +1,12 @@
+curl to download single file from git repo
+
+download the code https://github.com/yoursunny/esp32cam.git
+
+add library to arduino and open example and copy the contents of .ino contents and compile
+
+esptool --port COM12 write_flash_status --non-volatile 0 ==> to revover from flash errors
+
+arduino-cli compile --fqbn esp32:esp32:esp32wrover --output-dir ./out
+python -m esptool --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 out/01.ino.bin
+
+python esptool.py --chip auto --port /dev/ttyUSB0 --baud 115200 --before default_reset --no-stub --after hard_reset write_flash -u --flash_mode qio --flash_freq 40m --flash_size 4MB 0x1000 out/01.ino.bin
