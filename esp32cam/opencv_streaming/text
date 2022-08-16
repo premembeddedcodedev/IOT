@@ -5,6 +5,7 @@ download the code https://github.com/yoursunny/esp32cam.git
 
 add library to arduino and open example and copy the contents of .ino contents and compile
 
+Refer link: https://www.esp32.com/viewtopic.php?t=4061
 esptool --port COM12 write_flash_status --non-volatile 0 ==> to revover from flash errors
 
 arduino-cli compile --fqbn esp32:esp32:esp32wrover --output-dir ./out
