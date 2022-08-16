@@ -1,3 +1,9 @@
+ota:
+1. open ipaddress in webbrowser
+2. username: admin, password: admin
+3. export the bin from arduino gui
+4. give the path in webbrowser
+
 curl to download single file from git repo
 curl -O https://github.com/espressif/arduino-esp32/blob/master/tools/esptool.py
 
@@ -6,6 +12,8 @@ download the code https://github.com/yoursunny/esp32cam.git
 add library to arduino and open example and copy the contents of .ino contents and compile
 
 Refer link: https://www.esp32.com/viewtopic.php?t=4061
+esptool erase_flash
+esptool.py write_flash_status --non-volatile 0
 esptool --port COM12 write_flash_status --non-volatile 0 ==> to revover from flash errors
 
 arduino-cli compile --fqbn esp32:esp32:esp32wrover --output-dir ./out
