@@ -1,3 +1,8 @@
+Todo:
+1. Multi WIFI connections need to add
+2. Scan multi APs for strong connection during loss of connection - https://microcontrollerslab.com/esp32-wifimulti-connect-to-the-strongest-wifi-network/
+3. ESP.restart
+
 Arduino:
 https://github.com/plerup/makeEspArduino
 
