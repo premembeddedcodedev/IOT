@@ -174,11 +174,11 @@ void wifi_scan_config()
 	WiFi.disconnect();
 	scan();
 	WiFi.persistent(false);
-	wifiMulti.addAP("SHSIAAP2", "prem@123");
-	wifiMulti.addAP("JioFiber5G", "prem@123");
-	wifiMulti.addAP("JioFiber4g", "prem@123");
-	wifiMulti.addAP("TP-Link_F524", "prem@123");
-	wifiMulti.addAP("TP-Link_F524_5G", "prem@123");
+	wifiMulti.addAP("SHSIAAP2", "");
+	wifiMulti.addAP("JioFiber5G", "");
+	wifiMulti.addAP("JioFiber4g", "");
+	wifiMulti.addAP("TP-Link_F524", "");
+	wifiMulti.addAP("TP-Link_F524_5G", "");
 
 	if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
 		Serial.print("WiFi connected: ");
