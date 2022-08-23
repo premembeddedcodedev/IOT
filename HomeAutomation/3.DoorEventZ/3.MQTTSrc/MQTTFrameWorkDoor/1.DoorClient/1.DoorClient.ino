@@ -202,7 +202,7 @@ void setup() {
 	client.setCallback(callback);
 	timeClient.begin();
 }
-
+char timeval[32] = {};
 void loop()
 {
 	if (!client.connected()) {
@@ -237,12 +237,15 @@ void loop()
 	Serial.print(":");
 	Serial.println(seconds);
 
+	sprintf(timeval, "%s %u : %u : %u", destination, hours, minutes, seconds);
+
+	Serial.println(timeval);
 
 	if (digitalRead(14) == 1){
 		char out[128];
 		StaticJsonDocument<256> doc;
 		doc["sensor"] = "Door";
-		doc["time"] = random(20);
+		doc["time"] = timeval;
 		doc["Value"] = 1;
 		int b = serializeJson(doc, out);
 		boolean rc = client.publish("DoorEvents", out); 

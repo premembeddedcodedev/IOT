@@ -6,7 +6,7 @@ import threading
 import time
 import random
 
-HOST = "192.168.29.32"
+HOST = "192.168.29.65"
 PORT = 1883
 
 z = 0
@@ -89,7 +89,7 @@ def consumer(subclass_obj, condition_obj):
         # Consume the item 
         subclass_obj.consume_item()
       except:
-        print("Waiting for 10 seconds")
+        print(".")
         value = condition_obj.wait(10)
         if value:
           print("Item produced notified")
