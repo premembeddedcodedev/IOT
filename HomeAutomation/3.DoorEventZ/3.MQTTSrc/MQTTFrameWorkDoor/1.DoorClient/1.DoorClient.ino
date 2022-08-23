@@ -6,6 +6,12 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
+#include "DHT.h"
+#define DHTPIN 2
+#define DHTTYPE DHT11
+// Update these with values suitable for your network.
+DHT dht(DHTPIN, DHTTYPE);
+
 ESP8266WiFiMulti wifiMulti;
 
 const long utcOffsetInSeconds = 3600;
@@ -13,13 +19,58 @@ const long utcOffsetInSeconds = 3600;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 WiFiUDP ntpUDP;
-//NTPClient timeClient(ntpUDP, "time.nist.gov", utcOffsetInSeconds);
 NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 
+#define DOOR_ENABLE (1<<0)
+#define TEMP_ENABLE (1<<1)
+#define LIGHT_ENABLE (1<<2)
+#define SPEAKER_ENABLE (1<<3)
+#define MOVEMENT_ENABLE (1<<4)
+#define PHOTOS_ENABLE (1<<5)
+#define NOISE_ENABLE (1<<6)
+#define GAS_ENABLE (1<<7)
+
+/* Door Clients values*/
+#define DOOR_EVENT_1_MAIN 0x01
+#define DOOR_EVENT_1_NORTH 0x02
+#define DOOR_EVENT_2_SECOND 0x04
+/**/
+
+struct message {
+	/* Data get it from DoorClient */
+	uint8_t DoorNodeNumber;
+	uint8_t SensorBits;
+	uint8_t DoorEnabled;
+
+	/* Data get it from Email Node */
+	uint8_t NodeNumber;
+	uint8_t SpeakerEnable;
+	uint8_t TempSensorEnable;
+	uint8_t LightSensorEnable;
+	uint8_t MovementSensorEnable;
+	uint8_t PhotosEnable;
+	uint8_t NoiseSensorEnable;
+	uint8_t GasSensorEnable;
+	uint8_t AirQualitySensorEnable;
+	float h;
+	float t;
+	float f;
+	float hif;
+	float hic;
+};
+
+struct message config;
+
 const uint32_t connectTimeoutMs = 5000;
-int hours;
-int minutes;
-int seconds;
+int HH;
+int MM;
+int SEC;
+
+float h;
+float t;
+float f;
+float hif;
+float hic;
 
 // Update these with values suitable for your network.
 
@@ -35,6 +86,39 @@ unsigned long lastMsg = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
+void dht_sensor_data()
+{
+	h = dht.readHumidity();
+	// Read temperature as Celsius (the default)
+	t = dht.readTemperature();
+	// Read temperature as Fahrenheit (isFahrenheit = true)
+	f = dht.readTemperature(true);
+
+	// Check if any reads failed and exit early (to try again).
+	if (isnan(h) || isnan(t) || isnan(f)) {
+		Serial.println(F("Failed to read from DHT sensor!"));
+		return;
+	}
+
+	// Compute heat index in Fahrenheit (the default)
+	hif = dht.computeHeatIndex(f, h);
+	// Compute heat index in Celsius (isFahreheit = false)
+	hic = dht.computeHeatIndex(t, h, false);
+#if 1
+	Serial.print(F(" Humidity: "));
+	Serial.print(h);
+	Serial.print(F("%  Temperature: "));
+	Serial.print(t);
+	Serial.print(F("C "));
+	Serial.print(f);
+	Serial.print(F("F  Heat index: "));
+	Serial.print(hic);
+	Serial.print(F("C "));
+	Serial.print(hif);
+	Serial.println(F("F"));
+#endif
+}
+
 void callback(char* topic, byte* payload, unsigned int length) {
 	Serial.print("Message arrived [");
 	Serial.print(topic);
@@ -43,6 +127,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 		Serial.print((char)payload[i]);
 	}
 	Serial.println();
+
+	config.SensorBits = payload[0];
 
 	// Switch on the LED if an 1 was received as first character
 	if ((char)payload[0] == '1') {
@@ -68,7 +154,8 @@ void reconnect() {
 			// Once connected, publish an announcement...
 			client.publish("outTopic", "hello world");
 			// ... and resubscribe
-			client.subscribe("inTopic");
+			client.subscribe("EnableConfigs");
+			//client.subscribe("inTopic");
 		} else {
 			Serial.print("failed, rc=");
 			Serial.print(client.state());
@@ -131,7 +218,7 @@ void scan()
 		for (int8_t i = 0; i < scanResult; i++) {
 			WiFi.getNetworkInfo(i, ssid, encryptionType, rssi, bssid, channel, hidden);
 
-			Serial.printf(PSTR("  %02d: [CH %02d] [%02X:%02X:%02X:%02X:%02X:%02X] %ddBm %c %c %s\n"),
+			Serial.printf(PSTR("  %02d: [CH %02d] [%02X:%02X:%02X:%02X:%02X:%02X] %ddBm %c %c %s \n"),
 					i,
 					channel,
 					bssid[0], bssid[1], bssid[2],
@@ -174,11 +261,11 @@ void wifi_scan_config()
 	WiFi.disconnect();
 	scan();
 	WiFi.persistent(false);
-	wifiMulti.addAP("SHSIAAP2", "prem@123");
-	wifiMulti.addAP("JioFiber5G", "prem@123");
-	wifiMulti.addAP("JioFiber4g", "prem@123");
-	wifiMulti.addAP("TP-Link_F524", "prem@123");
-	wifiMulti.addAP("TP-Link_F524_5G", "prem@123");
+	wifiMulti.addAP("SHSIAAP2", "XXXXXX");
+	wifiMulti.addAP("JioFiber5G", "XXXXXX");
+	wifiMulti.addAP("JioFiber4g", "XXXXXXXX");
+	wifiMulti.addAP("TP-Link_F524", "XXXXXXXXXX");
+	wifiMulti.addAP("TP-Link_F524_5G", "XXXXXXX");
 
 	if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
 		Serial.print("WiFi connected: ");
@@ -194,66 +281,122 @@ void wifi_scan_config()
 void setup() {
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
 	pinMode(14, INPUT_PULLUP);
+	pinMode(12, OUTPUT);
 	Serial.begin(9600);
 	Serial.println("Publisher: Door Events Node -1");
 	wifi_scan_config();
 	ota_config();
+	dht.begin();
+	dht_sensor_data();
+	config.SensorBits = 0;
 	client.setServer(mqtt_server, 1883);
 	client.setCallback(callback);
 	timeClient.begin();
+	client.subscribe("EnableConfigs");
 }
 char timeval[32] = {};
+/*JSON buffer Start*/
+char out[128];
+StaticJsonDocument<256> doc;
+/*JSON buffer End*/
+
+void mqtt_publish()
+{
+	int b = serializeJson(doc, out);
+	boolean rc = client.publish("DoorEvents", out); 
+}
+
+void door_data_config()
+{
+	doc["sensor"] = "Door";
+	doc["AllConfigs"] = DOOR_ENABLE;//config.SensorBits;
+	doc["time"] = timeval;
+	doc["Value"] = DOOR_EVENT_1_MAIN; /*TODO : Door Value need to change*/
+	doc["Humidity"] = 0;
+	doc["Temp"] = 0;
+	doc["F"] = 0;
+	doc["HIF"] = 0;
+	doc["HIC"] = 0;
+}
+
+void temp_sensor_config()
+{
+	doc["sensor"] = "Temp";
+	doc["AllConfigs"] = 0;//config.SensorBits;
+	doc["time"] = timeval;
+	doc["Value"] = 0;
+	doc["Humidity"] = h;
+	doc["Temp"] = t;
+	doc["F"] = f;
+	doc["HIF"] = hif;
+	doc["HIC"] = hic;
+}
+
+void config_time()
+{
+	timeClient.update();
+	//Serial.println(timeClient.getFormattedTime());
+	strcpy(destination, daysOfTheWeek[timeClient.getDay()]);
+	//Serial.println(destination);
+
+	HH = timeClient.getHours();
+	if(HH <= 19) 
+		HH = timeClient.getHours() + 4;
+	else
+		HH = timeClient.getHours() - 20; //till 12 we are taking care in if
+
+	MM = timeClient.getMinutes();
+	if(MM <= 29)
+		MM = timeClient.getMinutes() + 30;
+	else {
+		MM = timeClient.getMinutes() - 30;
+		HH += 1;
+	}
+
+	SEC = timeClient.getSeconds();
+
+	//Serial.print(", ");
+	//Serial.print(HH);
+	//Serial.print(":");
+	//Serial.print(MM);
+	//Serial.print(":");
+	//Serial.println(SEC);
+
+	sprintf(timeval, "%s, %u : %u : %u", destination, HH, MM, SEC);
+
+	Serial.println(timeval);
+}
+
 void loop()
 {
 	if (!client.connected()) {
 		reconnect();
 	}
 	ArduinoOTA.handle();
-	timeClient.update();
-	Serial.println(timeClient.getFormattedTime());
-	strcpy(destination, daysOfTheWeek[timeClient.getDay()]);
-	Serial.println(destination);
 
-	hours = timeClient.getHours();
-	if(hours <= 19) {
-		hours = timeClient.getHours() + 4;
-	} else {
-		hours = timeClient.getHours() - 20; //till 12 we are taking care in if
+	config_time();
+
+	if (digitalRead(14) == 1) {
+		door_data_config();
+		config.DoorEnabled = 1;
 	}
 
-	minutes = timeClient.getMinutes();
-	if(minutes <= 29) {
-		minutes = timeClient.getMinutes() + 30;
-	} else {
-		minutes = timeClient.getMinutes() - 30;
-		hours += 1;
+	if ((config.SensorBits & DOOR_ENABLE) || config.DoorEnabled == 1) {
+		mqtt_publish();
+		config.DoorEnabled = 0;
 	}
-	seconds = timeClient.getSeconds();
 	
-	Serial.print(", ");
-	Serial.print(hours);
-	Serial.print(":");
-	Serial.print(minutes);
-	Serial.print(":");
-	Serial.println(seconds);
+	temp_sensor_config();
 
-	sprintf(timeval, "%s %u : %u : %u", destination, hours, minutes, seconds);
-
-	Serial.println(timeval);
-
-	if (digitalRead(14) == 1){
-		char out[128];
-		StaticJsonDocument<256> doc;
-		doc["sensor"] = "Door";
-		doc["time"] = timeval;
-		doc["Value"] = 1;
-		int b = serializeJson(doc, out);
-		boolean rc = client.publish("DoorEvents", out); 
+	if (config.SensorBits & TEMP_ENABLE) {
+		mqtt_publish();
+		config.SensorBits &= ~TEMP_ENABLE;
 	}
 
 	if ( WiFi.status() != WL_CONNECTED ) {
 		ESP.restart();
 	}
+
 	client.loop();
 
 	delay(5000);

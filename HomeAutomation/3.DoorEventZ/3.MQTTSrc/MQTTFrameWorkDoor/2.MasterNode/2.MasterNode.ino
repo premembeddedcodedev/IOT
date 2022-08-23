@@ -16,6 +16,7 @@
 #include <RH_NRF24.h>
 #include "painlessMesh.h"
 #include "namedMesh.h"
+#include <PubSubClient.h>
 
 #define DOOR_EVENT_1_MAIN 0x01
 #define DOOR_EVENT_1_NORTH 0x02
@@ -24,6 +25,7 @@
 #define DOOR_EVENT_2 0x03
 
 /* SensorBits Enablement */
+#define DOOR_ENABLE (1<<0)
 #define TEMP_ENABLE (1<<1)
 #define LIGHT_ENABLE (1<<2)
 #define SPEAKER_ENABLE (1<<3)
@@ -31,11 +33,9 @@
 #define PHOTOS_ENABLE (1<<5)
 #define NOISE_ENABLE (1<<6)
 #define GAS_ENABLE (1<<7)
-#define AIR_ENABLE (1<<8)
-#define NODE_1	(1<<9)
-#define NODE_2	(1<<10)
-#define NODE_3	(1<<11)
 
+WiFiClient espClient;
+PubSubClient client(espClient);
 String readings;
 uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 struct message {
@@ -77,15 +77,11 @@ struct message Clients[NUMCLIENTS];
 namedMesh mesh;
 
 uint8_t len = sizeof(struct message);
-void KeepAlive() ; 
-String to1 = "1stFloorMCU"; //nodename in the server
-String to2 = "2ndFloorMCU"; //nodename in the server
-String to1_N = "1stFloorMCU_North"; //nodename in the server
 
 /*
  * Your WiFi config here
  */
-char ssid[] = "XXXXXX";     // your network SSID (name)
+char ssid[] = "SHSIAAP2";     // your network SSID (name)
 char pass[] = "XXXXXX"; // your network password
 bool WiFiAP = false;      // Do yo want the ESP as AP?
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
@@ -115,6 +111,26 @@ int GetNodeNumber(int Data)
 
 	return ClientData.NodeNumber;
 }
+/*JSON buffer Start*/
+char out[128];
+StaticJsonDocument<256> doc;
+/*JSON buffer End*/
+
+void mqtt_publish()
+{
+        int b = serializeJson(doc, out);
+        boolean rc = client.publish("EnableConfigs", out);
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+        Serial.print(topic);
+}
+
+void enable_config()
+{
+	doc["AllConfigs"] = TEMP_ENABLE;//config.SensorBits;
+	mqtt_publish();
+}
 
 /*
  * Custom broker class with overwritten callback functions
@@ -137,7 +153,6 @@ class myMQTTBroker: public uMQTTBroker
 			char data_str[length+1];
 			os_memcpy(data_str, data, length);
 			data_str[length] = '\0';
-
 			Serial.println("received topic '"+topic+"' with data '"+(String)data_str+"'");
 #else
 			char str[length+1];
@@ -147,7 +162,7 @@ class myMQTTBroker: public uMQTTBroker
 			Serial.print("] ");
 			for ( i = 0; i < length; i++) {
 				str[i]=(char)data[i];
-				Serial.print((char)data[i]);
+				//Serial.print((char)data[i]);
 			}
 
 			str[i] = 0;
@@ -156,25 +171,32 @@ class myMQTTBroker: public uMQTTBroker
 			deserializeJson(doc,str);
 			const char* sensor = doc["sensor"];
 			long time = doc["time"];
-			ClientData.DoorStatus = doc["Value"];
-			ClientData.h = doc["Humidity"];
-			ClientData.t = doc["Temp"];
-			ClientData.f = doc["F"];
-			ClientData.hif = doc["HIF"];
-			ClientData.hic = doc["HIC"];
-			Serial.print("Door Status Received as: ");
-			Serial.println(ClientData.DoorStatus);
-			Serial.print(F(" Humidity: "));
-			Serial.print(ClientData.h);
-			Serial.print(F("%  Temperature: "));
-			Serial.print(ClientData.t);
-			Serial.print(F("C "));
-			Serial.print(ClientData.f);
-			Serial.print(F("F  Heat index: "));
-			Serial.print(ClientData.hif);
-			Serial.print(F("C "));
-			Serial.print(ClientData.hic);
-			Serial.println(F("F"));
+			ClientData.SensorBits = doc["AllConfigs"];
+			if(ClientData.SensorBits & DOOR_ENABLE) {
+				ClientData.DoorStatus = doc["Value"];
+				Serial.print("Door Status Received as: ");
+				Serial.println(ClientData.DoorStatus);
+			}
+
+			if(ClientData.SensorBits & TEMP_ENABLE) {
+				ClientData.h = doc["Humidity"];
+				ClientData.t = doc["Temp"];
+				ClientData.f = doc["F"];
+				ClientData.hif = doc["HIF"];
+				ClientData.hic = doc["HIC"];
+				Serial.print(F(" Humidity: "));
+				Serial.print(ClientData.h);
+				Serial.print(F("%  Temperature: "));
+				Serial.print(ClientData.t);
+				Serial.print(F("C "));
+				Serial.print(ClientData.f);
+				Serial.print(F("F  Heat index: "));
+				Serial.print(ClientData.hif);
+				Serial.print(F("C "));
+				Serial.print(ClientData.hic);
+				Serial.println(F("F"));
+			}
+
 #endif
 		}
 };
@@ -267,6 +289,9 @@ void setup()
 	nrf_config();
 	Serial.println("NRF config Completed");
 
+        client.setServer("127.0.0.1", 1883);
+        //client.setCallback(callback);
+
 	/*
 	 * Subscribe to anything
 	 */
@@ -291,8 +316,6 @@ void ExtractEmailNodeData()
 		ClientData.SensorBits |= ClientData.NoiseSensorEnable;
 	if(buf[0] & GAS_ENABLE)
 		ClientData.SensorBits |= ClientData.GasSensorEnable;
-	if(buf[0] & AIR_ENABLE)
-		ClientData.SensorBits |= ClientData.AirQualitySensorEnable;
 }
 
 void receive_data_from_mesh()
@@ -344,6 +367,7 @@ void loop()
 
 	if (ClientData.DoorStatus & DOOR_EVENT_1_MAIN)
 	{
+		enable_config();
 		Ciritical_Door_event();
 		ClientData.DoorStatus &=~DOOR_EVENT_1_MAIN;
 	}
