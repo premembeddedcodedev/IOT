@@ -21,6 +21,8 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 
+const char* passwd = "XXXXX";
+
 #define DOOR_ENABLE (1<<0)
 #define TEMP_ENABLE (1<<1)
 #define LIGHT_ENABLE (1<<2)
@@ -261,11 +263,11 @@ void wifi_scan_config()
 	WiFi.disconnect();
 	scan();
 	WiFi.persistent(false);
-	wifiMulti.addAP("SHSIAAP2", "XXXXXX");
-	wifiMulti.addAP("JioFiber5G", "XXXXXX");
-	wifiMulti.addAP("JioFiber4g", "XXXXXXXX");
-	wifiMulti.addAP("TP-Link_F524", "XXXXXXXXXX");
-	wifiMulti.addAP("TP-Link_F524_5G", "XXXXXXX");
+	wifiMulti.addAP("SHSIAAP2", passwd);
+	wifiMulti.addAP("JioFiber5G", passwd);
+	wifiMulti.addAP("JioFiber4g", passwd);
+	wifiMulti.addAP("TP-Link_F524", passwd);
+	wifiMulti.addAP("TP-Link_F524_5G", passwd);
 
 	if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
 		Serial.print("WiFi connected: ");
