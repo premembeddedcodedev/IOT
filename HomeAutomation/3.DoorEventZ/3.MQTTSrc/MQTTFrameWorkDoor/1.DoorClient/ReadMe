@@ -1,3 +1,12 @@
+
+compilation and loading steps:
+1. make
+2. make flash
+3. change the IP address in makefile and make ota
+4. run MQTT_PI with consumer.py and run consumer.py with 2 as message
+
+
+
 1. change the IP address in Makefile
 esptool.py --port /dev/ttyUSB0 erase_flash
  esptool --port /dev/ttyUSB0 write_flash 0x00000 out/1.DoorClient.ino.bin
