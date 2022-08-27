@@ -34,8 +34,6 @@
 #define NOISE_ENABLE (1<<6)
 #define GAS_ENABLE (1<<7)
 
-WiFiClient espClient;
-PubSubClient client(espClient);
 String readings;
 uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 struct message {
@@ -82,56 +80,9 @@ uint8_t len = sizeof(struct message);
  * Your WiFi config here
  */
 char ssid[] = "SHSIAAP2";     // your network SSID (name)
-char pass[] = "XXXXXX"; // your network password
+char pass[] = "prem@123"; // your network password
 bool WiFiAP = false;      // Do yo want the ESP as AP?
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
-void Ciritical_Door_event()
-{
-	Serial.println("Sending to gateway");
-	nrf24.send((uint8_t *)&ClientData.DoorStatus, 4);
-	nrf24.waitPacketSent();
-}
-String EnableConfigDataForDoor(int NodeNumber)
-{
-	JSONVar jsonReadings;
-	jsonReadings["Node"] = NodeNumber;
-	jsonReadings["SensorBits"] = ClientData.SensorBits;
-	readings = JSON.stringify(jsonReadings);
-	return readings;
-}
-
-int GetNodeNumber(int Data)
-{
-	if ((Data >> 9) & 0x1)
-		ClientData.NodeNumber = DOOR_EVENT_1_MAIN;	
-	if ((Data >> 10) & 0x1)
-		ClientData.NodeNumber = DOOR_EVENT_1_NORTH;	
-	if ((Data >> 11) & 0x1)
-		ClientData.NodeNumber = DOOR_EVENT_2_SECOND;	
-
-	return ClientData.NodeNumber;
-}
-/*JSON buffer Start*/
-char out[128];
-StaticJsonDocument<256> doc;
-/*JSON buffer End*/
-
-void mqtt_publish()
-{
-        int b = serializeJson(doc, out);
-        boolean rc = client.publish("EnableConfigs", out);
-}
-
-void callback(char* topic, byte* payload, unsigned int length) {
-        Serial.print(topic);
-}
-
-void enable_config()
-{
-	doc["AllConfigs"] = TEMP_ENABLE;//config.SensorBits;
-	mqtt_publish();
-}
-
 /*
  * Custom broker class with overwritten callback functions
  */
@@ -203,6 +154,53 @@ class myMQTTBroker: public uMQTTBroker
 
 myMQTTBroker myBroker;
 
+void Ciritical_Door_event()
+{
+	Serial.println("Sending to gateway");
+	nrf24.send((uint8_t *)&ClientData.DoorStatus, 4);
+	nrf24.waitPacketSent();
+}
+String EnableConfigDataForDoor(int NodeNumber)
+{
+	JSONVar jsonReadings;
+	jsonReadings["Node"] = NodeNumber;
+	jsonReadings["SensorBits"] = ClientData.SensorBits;
+	readings = JSON.stringify(jsonReadings);
+	return readings;
+}
+
+int GetNodeNumber(int Data)
+{
+	if ((Data >> 9) & 0x1)
+		ClientData.NodeNumber = DOOR_EVENT_1_MAIN;	
+	if ((Data >> 10) & 0x1)
+		ClientData.NodeNumber = DOOR_EVENT_1_NORTH;	
+	if ((Data >> 11) & 0x1)
+		ClientData.NodeNumber = DOOR_EVENT_2_SECOND;	
+
+	return ClientData.NodeNumber;
+}
+/*JSON buffer Start*/
+char out[128];
+StaticJsonDocument<256> doc;
+/*JSON buffer End*/
+
+void mqtt_publish()
+{
+        int b = serializeJson(doc, out);
+	myBroker.publish("EnableConfigs", out);
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+        Serial.print(topic);
+}
+
+void enable_config()
+{
+	doc["AllConfigs"] = TEMP_ENABLE;//config.SensorBits;
+	mqtt_publish();
+}
+
 /*
  * WiFi init stuff
  */
@@ -273,28 +271,16 @@ void nrf_config()
 void setup()
 {
 	Serial.begin(9600);
-	Serial.println();
-	Serial.println();
-
-	// Start WiFi
 	if (WiFiAP)
 		startWiFiAP();
 	else
 		startWiFiClient();
 
-	// Start the broker
 	ota_config();
 	Serial.println("Starting PVs MQTT broker - 1");
 	myBroker.init();
 	nrf_config();
 	Serial.println("NRF config Completed");
-
-        client.setServer("127.0.0.1", 1883);
-        //client.setCallback(callback);
-
-	/*
-	 * Subscribe to anything
-	 */
 	myBroker.subscribe("DoorEvents");
 }
 
@@ -367,7 +353,7 @@ void loop()
 
 	if (ClientData.DoorStatus & DOOR_EVENT_1_MAIN)
 	{
-		enable_config();
+		//enable_config();
 		Ciritical_Door_event();
 		ClientData.DoorStatus &=~DOOR_EVENT_1_MAIN;
 	}
@@ -382,7 +368,6 @@ void loop()
 		ClientData.DoorStatus &=~DOOR_EVENT_2_SECOND;
 	}
 	receive_data_from_mesh();
-	//myBroker.publish("broker/counter", (String)counter++);
 
 	delay(1000);
 }

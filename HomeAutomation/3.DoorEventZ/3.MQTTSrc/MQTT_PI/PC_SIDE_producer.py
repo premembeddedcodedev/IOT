@@ -60,27 +60,27 @@ def on_message(client, userdata, message):
         #print('Topic: %s | QOS: %s  | Message: %s' % (message.topic, message.qos, message.payload))
         pass_to_func_and_pub(message.payload)
 
-#def producer(subclass_obj, condition_obj):
-#    # Selecting a random number from the 1 to 3
-#    r = random.randint(1,3)
-#    print("Random number selected was:", r)
-#    
-#    # Creting r number of items by the producer
-#    #for i in range(1, r):
-#    if z < 4:
-#      print("Producing an item, time it will take(seconds): " + str(z))
-#      time.sleep(z)
-#      
-#      print("Producer acquiring the lock")
-#      condition_obj.acquire()
-#      try:
-#        # Produce an item
-#        subclass_obj.produce_item(z)
-#        # Notify that an item  has been produced
-#        condition_obj.notify()
-#      finally:
-#        # Releasing the lock after producing
-#        condition_obj.release()
+def producer(subclass_obj, condition_obj):
+    # Selecting a random number from the 1 to 3
+    r = random.randint(1,3)
+    print("Random number selected was:", r)
+    
+    # Creting r number of items by the producer
+    #for i in range(1, r):
+    if z < 4:
+      print("Producing an item, time it will take(seconds): " + str(z))
+      time.sleep(z)
+      
+      print("Producer acquiring the lock")
+      condition_obj.acquire()
+      try:
+        # Produce an item
+        subclass_obj.produce_item(3)
+        # Notify that an item  has been produced
+        condition_obj.notify()
+      finally:
+        # Releasing the lock after producing
+        condition_obj.release()
       
 def consumer(subclass_obj, condition_obj):
     condition_obj.acquire()
@@ -115,14 +115,14 @@ if __name__=='__main__':
   subclass_obj = subclass()
   
   # Producer thread
-  #pro = threading.Thread(target=producer, args=(subclass_obj,condition_obj,))
-  #pro.start()
+  pro = threading.Thread(target=producer, args=(subclass_obj,condition_obj,))
+  pro.start()
   
   # consumer thread
-  con = threading.Thread(target=consumer, args=(subclass_obj,condition_obj,))
-  con.start()
+  #con = threading.Thread(target=consumer, args=(subclass_obj,condition_obj,))
+  #con.start()
 
-  #pro.join()
-  con.join()
+  pro.join()
+  #con.join()
   print("Producer Consumer code executed")
 

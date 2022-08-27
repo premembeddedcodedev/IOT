@@ -21,7 +21,7 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 
-const char* passwd = "XXXXX";
+const char* passwd = "prem@123";
 
 #define DOOR_ENABLE (1<<0)
 #define TEMP_ENABLE (1<<1)
@@ -81,7 +81,9 @@ const char* mqtt_server = "192.168.29.65";
 char destination[17];
 
 WiFiClient espClient;
+WiFiClient espClient2;
 PubSubClient client(espClient);
+PubSubClient client2(espClient2);
 //PubSubClient client(server, 1883, callback, ethClient);
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE  (50)
@@ -155,8 +157,10 @@ void reconnect() {
 			Serial.println("connected");
 			// Once connected, publish an announcement...
 			client.publish("outTopic", "hello world");
+			client2.publish("outTopic", "hello world");
 			// ... and resubscribe
 			client.subscribe("EnableConfigs");
+			client2.subscribe("EnableConfigs");
 			//client.subscribe("inTopic");
 		} else {
 			Serial.print("failed, rc=");
@@ -292,9 +296,12 @@ void setup() {
 	dht_sensor_data();
 	config.SensorBits = 0;
 	client.setServer(mqtt_server, 1883);
+	client2.setServer("192.168.29.21", 1883);
 	client.setCallback(callback);
+	client2.setCallback(callback);
 	timeClient.begin();
 	client.subscribe("EnableConfigs");
+	client2.subscribe("EnableConfigs");
 }
 char timeval[32] = {};
 /*JSON buffer Start*/
@@ -306,6 +313,7 @@ void mqtt_publish()
 {
 	int b = serializeJson(doc, out);
 	boolean rc = client.publish("DoorEvents", out); 
+	boolean rc2 = client2.publish("DoorEvents", out); 
 }
 
 void door_data_config()
@@ -366,7 +374,7 @@ void config_time()
 
 	sprintf(timeval, "%s, %u : %u : %u", destination, HH, MM, SEC);
 
-	Serial.println(timeval);
+	//Serial.println(timeval);
 }
 
 void loop()
@@ -386,11 +394,11 @@ void loop()
 	if ((config.SensorBits & DOOR_ENABLE) || config.DoorEnabled == 1) {
 		mqtt_publish();
 		config.DoorEnabled = 0;
+		config.SensorBits &= ~DOOR_ENABLE;
 	}
 	
-	temp_sensor_config();
-
 	if (config.SensorBits & TEMP_ENABLE) {
+		temp_sensor_config();
 		mqtt_publish();
 		config.SensorBits &= ~TEMP_ENABLE;
 	}
