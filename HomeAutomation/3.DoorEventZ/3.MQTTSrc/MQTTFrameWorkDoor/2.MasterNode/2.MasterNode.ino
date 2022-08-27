@@ -197,7 +197,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void enable_config()
 {
-	doc["AllConfigs"] = TEMP_ENABLE;//config.SensorBits;
+	doc["AllConfigs"] = DOOR_ENABLE;//config.SensorBits;
 	mqtt_publish();
 }
 

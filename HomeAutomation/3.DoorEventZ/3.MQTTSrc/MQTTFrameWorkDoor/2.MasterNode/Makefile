@@ -36,7 +36,8 @@ compile:
 	arduino-cli compile --fqbn $(BOARD) ./ --output-dir ./out
 
 flash:
-	arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	#arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	arduino-cli upload --fqbn $(BOARD) -p $(PORT) --input-dir ./out/
 
 clean:
 	rm -rf out
