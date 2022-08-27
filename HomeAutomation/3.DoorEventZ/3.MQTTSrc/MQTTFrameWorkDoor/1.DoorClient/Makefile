@@ -35,13 +35,15 @@ compile:
 	arduino-cli compile --fqbn $(BOARD) ./ --output-dir ./out
 
 flash:
-	arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	#arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	arduino-cli upload --fqbn $(BOARD) -p $(PORT) --input-dir ./out/
 
 clean:
 	rm -rf out
 
 ota:
-	python ../tools/espota.py -i 192.168.29.119 -f ./out/OTA.ino.bin
+	python ./espota.py -i 192.168.29. -f ./out/1.DoorClient.bin
+	#python ../tools/espota.py -i 192.168.29.119 -f ./out/OTA.ino.bin
 	#@PLAT_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.platform.path' | awk -F= '{print $$2}'` ; \
 	   PY_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.tools.python3.path' | awk -F= '{print $$2}'` ; \
 	IOT_IP=`avahi-browse _arduino._tcp --resolve --parsable --terminate|grep -i ';$(IOT_NAME);'|grep ';$(OTA_PORT);'| awk -F\; '{print $$8}'|head -1`; \

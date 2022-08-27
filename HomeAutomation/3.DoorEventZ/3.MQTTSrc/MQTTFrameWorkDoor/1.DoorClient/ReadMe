@@ -7,6 +7,6 @@ ota esp8266 working: python ./espota.py -i 192.168.29.120 -f ./out/1.DoorClient.
 esp32 working: esptool --chip auto --port /dev/ttyUSB0 --baud 115200 --before default_reset --no-stub --after hard_reset write_flash -u --flash_mode qio --flash_freq 40m --flash_size 4MB 0x1000 Example_working_WifiCam.ino.esp32.bin
 
 esp8266 working: esptool --chip auto --port /dev/ttyUSB0 --baud 115200 write_flash 0x00000 out/1.DoorClient.ino.bin
-
+mosquitto_pub -h 192.168.29.21 -p 1884 -t 'EnableConfigs' -m '2'
 
 flasher exe for windows: https://github.com/nodemcu/nodemcu-flasher

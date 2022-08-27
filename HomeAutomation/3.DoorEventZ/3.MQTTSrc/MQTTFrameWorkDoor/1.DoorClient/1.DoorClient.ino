@@ -132,17 +132,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 	}
 	Serial.println();
 
-	config.SensorBits = payload[0];
+	config.SensorBits = (uint8_t)payload[0];
+	Serial.println(config.SensorBits);
 
-	// Switch on the LED if an 1 was received as first character
-	if ((char)payload[0] == '1') {
-		digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-		// but actually the LED is on; this is because
-		// it is active low on the ESP-01)
+	if(config.SensorBits & TEMP_ENABLE) {
+		Serial.println("pv: check");
 	} else {
-		digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+		Serial.println("pv: its check");
 	}
-
 }
 
 void reconnect() {
@@ -152,6 +149,7 @@ void reconnect() {
 		// Create a random client ID
 		String clientId = "ESP8266Client-";
 		clientId += String(random(0xffff), HEX);
+		Serial.print(clientId);
 		// Attempt to connect
 		if (client.connect(clientId.c_str())) {
 			Serial.println("connected");
@@ -284,6 +282,32 @@ void wifi_scan_config()
 	}
 }
 
+void client_connect() {
+	// Loop until we're reconnected
+	while (!client2.connected()) {
+		// Create a random client ID
+		String clientId = "ESP8266Client-";
+		clientId += String(random(0xffff), HEX);
+		Serial.print("Attempting 2-MQTT connection for ...");
+		Serial.print(clientId);
+		// Attempt to connect
+		if (client2.connect(clientId.c_str())) {
+			Serial.println("connected");
+			// Once connected, publish an announcement...
+			client2.publish("outTopic", "hello world");
+			// ... and resubscribe
+			client2.subscribe("inTopic");
+			client2.subscribe("EnableConfigs");
+		} else {
+			Serial.print("failed, rc=");
+			Serial.print(client2.state());
+			Serial.println(" try again in 5 seconds");
+			// Wait 5 seconds before retrying
+			delay(5000);
+		}
+	}
+}
+
 void setup() {
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
 	pinMode(14, INPUT_PULLUP);
@@ -296,11 +320,13 @@ void setup() {
 	dht_sensor_data();
 	config.SensorBits = 0;
 	client.setServer(mqtt_server, 1883);
-	client2.setServer("192.168.29.21", 1883);
+	client2.setServer("192.168.29.21", 1884);
 	client.setCallback(callback);
 	client2.setCallback(callback);
 	timeClient.begin();
+	client.subscribe("inTopic");
 	client.subscribe("EnableConfigs");
+	client2.subscribe("inTopic");
 	client2.subscribe("EnableConfigs");
 }
 char timeval[32] = {};
@@ -321,7 +347,7 @@ void door_data_config()
 	doc["sensor"] = "Door";
 	doc["AllConfigs"] = DOOR_ENABLE;//config.SensorBits;
 	doc["time"] = timeval;
-	doc["Value"] = DOOR_EVENT_1_MAIN; /*TODO : Door Value need to change*/
+	doc["Value"] = DOOR_EVENT_2_SECOND; /*TODO : Door Value need to change*/
 	doc["Humidity"] = 0;
 	doc["Temp"] = 0;
 	doc["F"] = 0;
@@ -332,7 +358,7 @@ void door_data_config()
 void temp_sensor_config()
 {
 	doc["sensor"] = "Temp";
-	doc["AllConfigs"] = 0;//config.SensorBits;
+	doc["AllConfigs"] = TEMP_ENABLE;//config.SensorBits;
 	doc["time"] = timeval;
 	doc["Value"] = 0;
 	doc["Humidity"] = h;
@@ -379,8 +405,12 @@ void config_time()
 
 void loop()
 {
+	digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
 	if (!client.connected()) {
 		reconnect();
+	}
+	if (!client2.connected()) {
+		client_connect();
 	}
 	ArduinoOTA.handle();
 
@@ -408,6 +438,7 @@ void loop()
 	}
 
 	client.loop();
+	client2.loop();
 
 	delay(5000);
 }
