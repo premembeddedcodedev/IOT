@@ -115,14 +115,14 @@ if __name__=='__main__':
   subclass_obj = subclass()
   
   # Producer thread
-  pro = threading.Thread(target=producer, args=(subclass_obj,condition_obj,))
-  pro.start()
+  #pro = threading.Thread(target=producer, args=(subclass_obj,condition_obj,))
+  #pro.start()
   
   # consumer thread
   con = threading.Thread(target=consumer, args=(subclass_obj,condition_obj,))
   con.start()
 
-  pro.join()
+  #pro.join()
   con.join()
   print("Producer Consumer code executed")
 

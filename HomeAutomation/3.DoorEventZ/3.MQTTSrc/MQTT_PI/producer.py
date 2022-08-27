@@ -119,10 +119,10 @@ if __name__=='__main__':
   pro.start()
   
   # consumer thread
-  con = threading.Thread(target=consumer, args=(subclass_obj,condition_obj,))
-  con.start()
+  #con = threading.Thread(target=consumer, args=(subclass_obj,condition_obj,))
+  #con.start()
 
   pro.join()
-  con.join()
+  #con.join()
   print("Producer Consumer code executed")
 
