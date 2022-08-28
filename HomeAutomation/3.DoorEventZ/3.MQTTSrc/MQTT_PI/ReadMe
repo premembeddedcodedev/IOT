@@ -9,7 +9,7 @@ Follow the
 https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-connection
 
 	$ cat /etc/mosquitto/conf.d/standard.conf
-	listener 1883
+	listener 1884
 	protocol mqtt
 	allow_anonymous true
 
@@ -23,6 +23,9 @@ https://stackoverflow.com/questions/24556160/mosquitto-client-obtain-refused-con
 Working without username and password:
 	mosquitto_sub -h 192.168.29.32 -t "outTopic"
 	mosquitto_pub -t 'inTopic' -m 'Praveen'
+
+        mosquitto_pub -h 192.168.29.21 -p 1884 -t 'EnableConfigs' -m '2'
+        mosquitto_sub -h 127.0.0.1 -t "#"
 
 example:
 	mosquitto_sub -u username -P password -t newtopic/test -h test.mosquitto.org
