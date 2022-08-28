@@ -1,5 +1,5 @@
 1. systemctl stop mosquitto.service
-2. netstat -at ==> to see 1883 is visible in this list
+2. netstat -at ==> to see 1884 is visible in this list - Arduino working on 1883..
 3. systemctl start mosquitto.service
 4. https://gist.github.com/MohamedAlaa/2961058
 5. broker and pub and sub code :https://github.com/eclipse/mosquitto
