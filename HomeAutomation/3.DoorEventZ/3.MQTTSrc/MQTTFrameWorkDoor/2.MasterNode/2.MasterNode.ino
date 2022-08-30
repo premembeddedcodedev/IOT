@@ -157,7 +157,7 @@ myMQTTBroker myBroker;
 void Ciritical_Door_event()
 {
 	Serial.println("Sending to gateway");
-	nrf24.send((uint8_t *)&ClientData.DoorStatus, 4);
+	nrf24.send((uint8_t *)&ClientData.DoorStatus, 1);
 	nrf24.waitPacketSent();
 }
 String EnableConfigDataForDoor(int NodeNumber)

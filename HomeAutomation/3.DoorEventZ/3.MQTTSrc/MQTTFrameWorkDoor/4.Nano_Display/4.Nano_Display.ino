@@ -44,8 +44,8 @@ void receiveEvent(int howMany) {
 	uint8_t i= 0;
 	while(i<howMany) {
 		data[i] = Wire.read();
-		Serial.print("Data:");
-		Serial.println(data[i]);
+		//Serial.print("Data:");
+		//Serial.println(data[i]);
 		i++;
 	}
 

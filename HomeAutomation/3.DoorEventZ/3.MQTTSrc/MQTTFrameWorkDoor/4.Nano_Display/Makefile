@@ -1,4 +1,4 @@
-BOARD?=arduino:avr:nano
+BOARD?=arduino:avr:nano:cpu=atmega328old
 PORT?=/dev/ttyUSB0
 
 .PHONY: compile

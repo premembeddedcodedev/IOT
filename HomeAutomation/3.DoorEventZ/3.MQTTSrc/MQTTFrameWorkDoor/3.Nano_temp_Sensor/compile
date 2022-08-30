@@ -1,2 +1,2 @@
-make FQBN=arduino:avr:nano
+make FQBN=arduino:avr:nano:cpu=atmega328old
 #arduino-cli compile --fqbn arduino:avr:nano
