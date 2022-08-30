@@ -1,0 +1,4 @@
+	1. make compile
+	2. make flash
+	3. make copy
+	4. make serial 
