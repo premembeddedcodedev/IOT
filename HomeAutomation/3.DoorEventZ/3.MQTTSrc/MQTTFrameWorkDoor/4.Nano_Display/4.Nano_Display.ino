@@ -105,9 +105,12 @@ void display_config()
 
 	testdrawstyles();    // Draw 'stylized' characters
 }
+int led_pin=2;
 
 void setup() {
 	Serial.begin(9600);
+	pinMode(led_pin,OUTPUT);
+	digitalWrite(led_pin, LOW);
 	Wire.begin(8); 
 	while(!Serial);    // time to get serial running
 	Serial.println(F("BME280 test - Original"));
@@ -130,10 +133,13 @@ void loop() {
 			display.print("DoorStatus: ");
 			display.println(data[0]);
 			display.display();
-			messageID = 0;     
+			messageID = 0;
+			digitalWrite(led_pin, HIGH);
 		}
 		check_event = 0;
 	} else {
+			digitalWrite(led_pin, LOW);
+#if 1
 		display.setCursor(0,0);
 		display.setTextSize(1);
 		display.setTextColor(SSD1306_WHITE);
@@ -156,6 +162,7 @@ void loop() {
 		display.println(ClientData.HumidityF);
 		display.display();
 		messageID++;
+#endif
 	}
 
 	if(messageID > 32767)

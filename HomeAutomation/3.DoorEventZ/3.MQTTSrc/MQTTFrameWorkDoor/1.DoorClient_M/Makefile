@@ -42,7 +42,7 @@ clean:
 	rm -rf out
 
 ota:
-	python ./espota.py -i 192.168.29. -f ./out/1.DoorClient.bin
+	python ./espota.py -i 192.168.29.203 -f ./out/1.DoorClient_M.ino.bin
 	#python ../tools/espota.py -i 192.168.29.119 -f ./out/OTA.ino.bin
 	#@PLAT_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.platform.path' | awk -F= '{print $$2}'` ; \
 	   PY_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.tools.python3.path' | awk -F= '{print $$2}'` ; \
