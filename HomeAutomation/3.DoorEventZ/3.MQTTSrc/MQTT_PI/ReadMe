@@ -26,6 +26,8 @@ Working without username and password:
 
         mosquitto_pub -h 192.168.29.21 -p 1884 -t 'EnableConfigs' -m '2'
         mosquitto_sub -h 127.0.0.1 -t "#"
+	mosquitto_sub -h 192.168.29.21 -p 1884 -t '#'
+	mosquitto_pub -h 192.168.29.21 -p 1884 -t 'EnableConfigs' -m "21"
 
 example:
 	mosquitto_sub -u username -P password -t newtopic/test -h test.mosquitto.org
