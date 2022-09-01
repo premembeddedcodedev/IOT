@@ -1,0 +1,12 @@
+1. install rshell using pip3
+2. rshell --editor nano -p /dev/ttyACM0
+3. you can see the boardname in the log after executing 2nd command
+4. cd pyboard
+5. move main.py file from local folders to /pyboard
+6. open terminal and see the logs
+7. if you want to edit main.py use following command: edit main.py
+8. help will show all the commands for rshell
+9. repl will give provision to python where you can write  python code
+10. if you want to run code in rshell use import main.py
+11. 
+
