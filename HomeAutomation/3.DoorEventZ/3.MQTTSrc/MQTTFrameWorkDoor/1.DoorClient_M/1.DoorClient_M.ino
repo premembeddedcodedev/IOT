@@ -8,27 +8,21 @@
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
 #include "DHT.h"
+#define D5 14
 #define DHTPIN 2
 #define DHTTYPE DHT11
-// Update these with values suitable for your network.
-DHT dht(DHTPIN, DHTTYPE);
 
-ESP8266WiFiMulti wifiMulti;
+/*Command References from mosquitto_pub : 
+ * Door sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue1" --> Ex: "11"
+ * Light sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue2"
+ * Speaker sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue4"
+ * Movement sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue8"
+ * Photos sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "NodevalueF" TODO: Need to see how to send more than 15 value
+ * Noise sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue10"
+ * Gas sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue12"
+ */
 
-const long utcOffsetInSeconds = 3600;
-
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
-
-const char* passwd = "prem@123";
-uint8_t retry = 5;
-uint8_t retry2 = 5;
-String clientId;
-String clientId2;
-uint8_t mqtt_broker_status_1;
-uint8_t mqtt_broker_status_2;
+/* SensorConfigs*/
 #define DOOR_ENABLE (1<<0)
 #define TEMP_ENABLE (1<<1)
 #define LIGHT_ENABLE (1<<2)
@@ -38,24 +32,45 @@ uint8_t mqtt_broker_status_2;
 #define NOISE_ENABLE (1<<6)
 #define GAS_ENABLE (1<<7)
 
+/* NodeConfigs */
 #define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
-
+#define ARDUINO_NODE_RESET_ENABLE (1<<1)
+#define ARDUINO_BROKER_RESET_ENABLE (1<<2)
 
 /* Door Clients values*/
 #define DOOR_EVENT_1_MAIN 0x01
 #define DOOR_EVENT_1_NORTH 0x02
 #define DOOR_EVENT_2_SECOND 0x04
-/**/
+
+WiFiUDP ntpUDP;
+char out[256];
+char timeval[32] = {};
+char *Nodename = "East Door";
+ESP8266WiFiMulti wifiMulti;
+StaticJsonDocument<512> doc;
+uint8_t NodeValue = DOOR_EVENT_1_MAIN;
+const long utcOffsetInSeconds = 3600;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+const char* passwd = "prem@123";
+uint8_t retry = 5;
+uint8_t retry2 = 5;
+String clientId;
+String clientId2;
+uint8_t mqtt_broker_status_1;
+uint8_t mqtt_broker_status_2;
+
+DHT dht(DHTPIN, DHTTYPE);
+NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
+
+/* publish : BrokerEvents, DoorSensorEvents
+ * subscribe: SensorConfigs, EnableNodeConfigs
+ */
 
 struct message {
-	/* Data get it from DoorClient */
-	uint8_t DoorNodeNumber;
 	uint8_t SensorBits;
 	uint8_t DoorEnabled;
-	uint8_t ConfigBits;
+	uint8_t NodeConfigs;
 
-	/* Data get it from Email Node */
-	uint8_t NodeNumber;
 	uint8_t SpeakerEnable;
 	uint8_t TempSensorEnable;
 	uint8_t LightSensorEnable;
@@ -64,11 +79,12 @@ struct message {
 	uint8_t NoiseSensorEnable;
 	uint8_t GasSensorEnable;
 	uint8_t AirQualitySensorEnable;
-	float h;
+
+/*	float h;
 	float t;
 	float f;
 	float hif;
-	float hic;
+	float hic;*/
 };
 
 struct message config;
@@ -86,7 +102,8 @@ float hic;
 
 // Update these with values suitable for your network.
 
-const char* mqtt_server = "192.168.29.65";
+const char* Arduino_mqtt_server = "192.168.29.119";
+const char* PC_mqtt_server = "192.168.29.21";
 
 char destination[17];
 
@@ -260,10 +277,10 @@ void payload0_extract(byte* payload)
 
 void payload1_extract(byte* payload)
 {
-	config.ConfigBits = (uint8_t)payload[1];
-	Serial.println(config.ConfigBits);
+	config.NodeConfigs = (uint8_t)payload[1];
+	Serial.println(config.NodeConfigs);
 
-	if(config.SensorBits & ARDUINO_BROKER_RETRY_ENABLE) {
+	if(config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
 		Serial.println("Broker retry enabled....");
 	}
 }
@@ -276,8 +293,21 @@ void callback(char* topic, byte* payload, unsigned int length) {
 		Serial.print((char)payload[i]);
 	}
 	Serial.println();
+
 	payload0_extract(payload);
 	payload1_extract(payload);
+}
+
+void broker_1_subscribtion()
+{
+	client.subscribe("SensorConfigs");
+	client.subscribe("EnableNodeConfigs");
+}
+
+void broker_2_subscribtion()
+{
+	client2.subscribe("SensorConfigs");
+	client2.subscribe("EnableNodeConfigs");
 }
 
 void reconnect() {
@@ -293,12 +323,8 @@ void reconnect() {
 		if (client.connect(clientId.c_str())) {
 			Serial.println("connected");
 			mqtt_broker_status_1 = 1;
-			// Once connected, publish an announcement...
 			client.publish("outTopic", "hello world");
-			//client2.publish("outTopic", "hello world");
-			// ... and resubscribe
-			client.subscribe("EnableConfigs");
-			client.subscribe("inTopic");
+			broker_1_subscribtion();
 		} else {
 			Serial.print("failed, rc=");
 			Serial.print(client.state());
@@ -307,6 +333,7 @@ void reconnect() {
 			delay(5000);
 		}
 	}
+
 	if(retry2 == 0)	{
 		Serial.println("Retry count is exceeded");
 		mqtt_broker_status_1 = 0;
@@ -429,25 +456,19 @@ void client_connect() {
 	// Loop until we're reconnected
 	while (!client2.connected() && retry > 0) {
 		retry--;
-		// Create a random client ID
 		clientId2 = "ESP8266Client-";
 		clientId2 += String(random(0xffff), HEX);
 		Serial.print("Attempting 2-MQTT connection for ...");
 		Serial.print(clientId2);
-		// Attempt to connect
 		if (client2.connect(clientId2.c_str())) {
 			Serial.println("connected");
 			mqtt_broker_status_2 = 1;
-			// Once connected, publish an announcement...
 			client2.publish("outTopic", "hello world");
-			// ... and resubscribe
-			client2.subscribe("inTopic");
-			client2.subscribe("EnableConfigs");
+			broker_2_subscribtion();
 		} else {
 			Serial.print("failed, rc=");
 			Serial.print(client2.state());
 			Serial.println(" try again in 5 seconds");
-			// Wait 5 seconds before retrying
 			delay(5000);
 		}
 	}
@@ -459,70 +480,105 @@ void client_connect() {
 	}
 }
 
+void broker_1_config()
+{
+	client.setServer(Arduino_mqtt_server, 1883);
+	client.setCallback(callback);
+	broker_1_subscribtion();
+}
+
+void broker_2_config()
+{
+	client2.setServer(PC_mqtt_server, 1884);
+	client2.setCallback(callback);
+	broker_2_subscribtion();
+}
+
 void setup() {
+
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-	pinMode(14, INPUT_PULLUP);
+	pinMode(D5, INPUT_PULLUP);
 	pinMode(12, OUTPUT);
+
 	Serial.begin(9600);
-	Serial.println("Publisher: Door Events Node -1");
+	Serial.println("Publisher: Door Events Node");
+
 	wifi_scan_config();
+
 	ota_config();
+
 	dht.begin();
 	dht_sensor_data();
-	config.SensorBits = 0;
-	config.ConfigBits = 0;
-	client.setServer(mqtt_server, 1883);
-	client2.setServer("192.168.29.21", 1884);
-	client.setCallback(callback);
-	client2.setCallback(callback);
-	timeClient.begin();
-	client.subscribe("inTopic");
-	client.subscribe("EnableConfigs");
-	client2.subscribe("inTopic");
-	client2.subscribe("EnableConfigs");
-}
-char timeval[32] = {};
-/*JSON buffer Start*/
-char out[256];
-StaticJsonDocument<512> doc;
-/*JSON buffer End*/
 
-void mqtt_publish()
+	config.SensorBits = 0;
+	config.NodeConfigs = 0;
+
+	timeClient.begin();
+
+	broker_1_config();
+	broker_2_config();	
+	browser_config();
+}
+
+void mqtt_publish(char *pubstr)
 {
 	int b = serializeJson(doc, out);
-	boolean rc = client.publish("DoorEvents", out); 
-	boolean rc2 = client2.publish("DoorEvents", out); 
+	
+	if(mqtt_broker_status_1 == 1)
+		boolean rc = client.publish(pubstr, out); 
+	
+	if(mqtt_broker_status_2 == 1)
+		boolean rc2 = client2.publish(pubstr, out);
 }
 
-void door_data_config(uint8_t event)
+void mqtt_broker_reset(uint8_t event)
 {
 	doc["sensor"] = "Door";
-	doc["AllConfigs"] = DOOR_ENABLE;
-	doc["serverConfigs"] = config.ConfigBits;//config.SensorBits;
+	doc["AllConfigs"] = 0;
+	doc["serverConfigs"] = event;
 	doc["time"] = timeval;
 	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
 	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
-	doc["Client1"] = clientId;
-	doc["Client2"] = clientId2;
-	doc["Value"] = event; /*TODO : Door Value need to change*/
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["NodeName"] = Nodename;
+
+	doc["Value"] = NodeValue;
+	mqtt_publish("BrokerEvents");
+}
+
+void dooropen_msgsend(uint8_t event)
+{
+	doc["sensor"] = "Door";
+	doc["AllConfigs"] = DOOR_ENABLE;
+	doc["serverConfigs"] = 0;
+	doc["time"] = timeval;
+	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
+	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["NodeName"] = Nodename;
+
+	doc["Value"] = event;
+	mqtt_publish("DoorSensorEvents");
 }
 
 void temp_sensor_config()
 {
 	doc["sensor"] = "Temp";
 	doc["AllConfigs"] = TEMP_ENABLE;
-	doc["serverConfigs"] = config.ConfigBits;//config.SensorBits;
+	doc["serverConfigs"] = 0;
 	doc["time"] = timeval;
 	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
 	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
-	doc["Client1"] = clientId;
-	doc["Client2"] = clientId2;
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["NodeName"] = Nodename;
+	
 	doc["Value"] = 0;
 	doc["Humidity"] = h;
 	doc["Temp"] = t;
 	doc["F"] = f;
 	doc["HIF"] = hif;
 	doc["HIC"] = hic;
+	mqtt_publish("DoorSensorEvents");
 }
 
 void config_time()
@@ -560,49 +616,74 @@ void config_time()
 	//Serial.println(timeval);
 }
 
-void loop()
+void broker_status_check()
 {
-	server.handleClient();
-	MDNS.update();
-
 	if (!client.connected()) {
 		reconnect();
 	}
 	if (!client2.connected()) {
 		client_connect();
 	}
+}
+
+void dev_events_check()
+{
+	if (digitalRead(D5) == 1) {
+		Serial.println("Door is open");
+		dooropen_msgsend(NodeValue);
+		config.DoorEnabled = 1;
+	}
+
+	if (config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
+		retry = 5;
+		retry2 = 5;
+		config.NodeConfigs &= ~ARDUINO_BROKER_RETRY_ENABLE;
+	}
+
+	/* Sending to Broker */
+	if (mqtt_broker_status_1 == 0 && retry == 0) {
+		mqtt_broker_reset(ARDUINO_BROKER_RESET_ENABLE);
+		retry = 5;
+		retry2 = 5;
+	}
+
+	/* Door Sensor fullnode restart */
+	if (config.NodeConfigs & ARDUINO_NODE_RESET_ENABLE) {
+		if(config.SensorBits & NodeValue) {
+			ESP.restart();
+			config.NodeConfigs &= ~ARDUINO_NODE_RESET_ENABLE;
+		}
+	}
+}
+
+void config_events_check()
+{
+	if (config.SensorBits & TEMP_ENABLE) {
+		if(config.SensorBits & NodeValue) {
+			temp_sensor_config();
+			config.SensorBits &= ~TEMP_ENABLE;
+		}
+	}
+}
+
+void loop()
+{
+	if ( WiFi.status() != WL_CONNECTED ) {
+		ESP.restart();
+	}
+	
+	server.handleClient();
+	MDNS.update();
+
+	broker_status_check();
+
 	ArduinoOTA.handle();
 
 	config_time();
 
-	if (digitalRead(14) == 1) {
-		Serial.println("Door is open");
-		door_data_config(DOOR_EVENT_1_NORTH);
-		mqtt_publish();
-		config.DoorEnabled = 1;
-	}
+	dev_events_check();
 
-	if ((config.SensorBits & DOOR_ENABLE)) {
-		mqtt_publish();
-		config.DoorEnabled = 0;
-		config.SensorBits &= ~DOOR_ENABLE;
-	}
-
-	if (config.SensorBits & TEMP_ENABLE) {
-		temp_sensor_config();
-		mqtt_publish();
-		config.SensorBits &= ~TEMP_ENABLE;
-	}
-
-	if (config.ConfigBits & ARDUINO_BROKER_RETRY_ENABLE) {
-		retry = 5;
-		retry2 = 5;
-		config.ConfigBits &= ~ARDUINO_BROKER_RETRY_ENABLE;
-	}
-
-	if ( WiFi.status() != WL_CONNECTED ) {
-		ESP.restart();
-	}
+	config_events_check();
 
 	client.loop();
 	client2.loop();
