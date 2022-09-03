@@ -22,11 +22,21 @@
  * Gas sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue12"
  */
 
-/* SensorConfigs*/
-#define DOOR_ENABLE (1<<0)
-#define TEMP_ENABLE (1<<1)
-#define LIGHT_ENABLE (1<<2)
-#define SPEAKER_ENABLE (1<<3)
+/* DoorConfigs - 1st byte payload*/
+#define FIRSTEASTDOOR_ENABLE		(1<<0)
+#define FIRSTNORTHDOOR_ENABLE		(1<<1)
+#define FIRSTWESTDOOR_ENABLE		(1<<2)
+#define SECONDNORTHDOOR_ENABLE		(1<<3)
+#define SECONDGLASSEASTDOOR_ENABLE 	(1<<4)
+#define SECONDBEDNORTHDOOR_ENABLE 	(1<<5)
+#define WINDOW1DOOR_ENABLE 		(1<<6)
+#define WINDOWTOPDOOR_ENABLE 		(1<<7)
+
+/* SensorConfigs - 2nd byte payload*/
+#define DOOR_ENABLE	(1<<0)
+#define TEMP_ENABLE	(1<<1)
+#define LIGHT_ENABLE	(1<<2)
+#define SPEAKER_ENABLE	(1<<3)
 #define MOVEMENT_ENABLE (1<<4)
 #define PHOTOS_ENABLE (1<<5)
 #define NOISE_ENABLE (1<<6)
@@ -36,6 +46,7 @@
 #define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
 #define ARDUINO_NODE_RESET_ENABLE (1<<1)
 #define ARDUINO_BROKER_RESET_ENABLE (1<<2)
+#define ARDUINO_BROKER_CLIDATA_ENABLE (1<<3)
 
 /* Door Clients values*/
 #define DOOR_EVENT_1_MAIN 0x01
@@ -69,6 +80,7 @@ NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 struct message {
 	uint8_t SensorBits;
 	uint8_t DoorEnabled;
+	uint8_t doorvalue;
 	uint8_t NodeConfigs;
 
 	uint8_t SpeakerEnable;
@@ -80,11 +92,11 @@ struct message {
 	uint8_t GasSensorEnable;
 	uint8_t AirQualitySensorEnable;
 
-/*	float h;
-	float t;
-	float f;
-	float hif;
-	float hic;*/
+	/*	float h;
+		float t;
+		float f;
+		float hif;
+		float hic;*/
 };
 
 struct message config;
@@ -265,9 +277,9 @@ void dht_sensor_data()
 #endif
 }
 
-void payload0_extract(byte* payload)
+void payload1_extract(byte* payload)
 {
-	config.SensorBits = (uint8_t)payload[0];
+	config.SensorBits = (uint8_t)payload[1];
 	Serial.println(config.SensorBits);
 
 	if(config.SensorBits & TEMP_ENABLE) {
@@ -275,39 +287,56 @@ void payload0_extract(byte* payload)
 	}
 }
 
-void payload1_extract(byte* payload)
+void payload2_extract(byte* payload)
 {
-	config.NodeConfigs = (uint8_t)payload[1];
+	config.NodeConfigs = (uint8_t)payload[2];
 	Serial.println(config.NodeConfigs);
 
 	if(config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
 		Serial.println("Broker retry enabled....");
 	}
+	if(config.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
+		Serial.println("Broker Clidata enabled....");
+	}
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
+	//Serial.println("received topic '"+topic+"' with data '"+(String)payload+"'");
 	Serial.print("Message arrived [");
 	Serial.print(topic);
 	Serial.print("] ");
 	for (int i = 0; i < length; i++) {
-		Serial.print((char)payload[i]);
+		switch(i) {
+			case 0:
+				config.doorvalue = payload[0];
+				Serial.println(config.doorvalue);
+				break;
+			case 1:
+				payload1_extract(payload);
+				break;
+			case 2:
+				payload2_extract(payload);
+				break;
+			default:
+				break;
+		}
 	}
 	Serial.println();
 
-	payload0_extract(payload);
-	payload1_extract(payload);
 }
 
 void broker_1_subscribtion()
 {
 	client.subscribe("SensorConfigs");
 	client.subscribe("EnableNodeConfigs");
+	client.subscribe("RxFromBroker");
 }
 
 void broker_2_subscribtion()
 {
 	client2.subscribe("SensorConfigs");
 	client2.subscribe("EnableNodeConfigs");
+	client2.subscribe("RxFromBroker");
 }
 
 void reconnect() {
@@ -335,7 +364,7 @@ void reconnect() {
 	}
 
 	if(retry2 == 0)	{
-		Serial.println("Retry count is exceeded");
+		//Serial.println("Retry count is exceeded");
 		mqtt_broker_status_1 = 0;
 	}
 }
@@ -523,12 +552,27 @@ void setup() {
 void mqtt_publish(char *pubstr)
 {
 	int b = serializeJson(doc, out);
-	
+
 	if(mqtt_broker_status_1 == 1)
 		boolean rc = client.publish(pubstr, out); 
-	
+
 	if(mqtt_broker_status_2 == 1)
 		boolean rc2 = client2.publish(pubstr, out);
+}
+
+void mqtt_broker_clidata(uint8_t event)
+{
+	doc["sensor"] = "misc";
+	doc["AllConfigs"] = 0;
+	doc["serverConfigs"] = event;
+	doc["time"] = timeval;
+	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
+	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["NodeName"] = Nodename;
+
+	doc["Value"] = NodeValue;
+	mqtt_publish("DoorSensorEvents");
 }
 
 void mqtt_broker_reset(uint8_t event)
@@ -571,7 +615,7 @@ void temp_sensor_config()
 	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
 	doc["NodeIPAddress"] = WiFi.SSID();
 	doc["NodeName"] = Nodename;
-	
+
 	doc["Value"] = 0;
 	doc["Humidity"] = h;
 	doc["Temp"] = t;
@@ -649,17 +693,22 @@ void dev_events_check()
 
 	/* Door Sensor fullnode restart */
 	if (config.NodeConfigs & ARDUINO_NODE_RESET_ENABLE) {
-		if(config.SensorBits & NodeValue) {
+		if(config.doorvalue & NodeValue) {
 			ESP.restart();
 			config.NodeConfigs &= ~ARDUINO_NODE_RESET_ENABLE;
 		}
+	}
+
+	if (config.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
+		mqtt_broker_clidata(ARDUINO_BROKER_CLIDATA_ENABLE);
+		config.NodeConfigs &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
 }
 
 void config_events_check()
 {
 	if (config.SensorBits & TEMP_ENABLE) {
-		if(config.SensorBits & NodeValue) {
+		if(config.doorvalue & NodeValue) {
 			temp_sensor_config();
 			config.SensorBits &= ~TEMP_ENABLE;
 		}
@@ -671,7 +720,7 @@ void loop()
 	if ( WiFi.status() != WL_CONNECTED ) {
 		ESP.restart();
 	}
-	
+
 	server.handleClient();
 	MDNS.update();
 

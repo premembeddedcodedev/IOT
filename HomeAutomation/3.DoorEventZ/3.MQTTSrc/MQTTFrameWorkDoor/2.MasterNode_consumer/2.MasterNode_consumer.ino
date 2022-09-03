@@ -7,10 +7,8 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
-#include "DHT.h"
+#include <RH_NRF24.h>
 #define D5 14
-#define DHTPIN 2
-#define DHTTYPE DHT11
 
 /*Command References from mosquitto_pub : 
  * Door sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue1" --> Ex: "11"
@@ -38,27 +36,32 @@
 #define LIGHT_ENABLE	(1<<2)
 #define SPEAKER_ENABLE	(1<<3)
 #define MOVEMENT_ENABLE (1<<4)
-#define PHOTOS_ENABLE	(1<<5)
-#define NOISE_ENABLE	(1<<6)
-#define GAS_ENABLE	(1<<7)
+#define PHOTOS_ENABLE (1<<5)
+#define NOISE_ENABLE (1<<6)
+#define GAS_ENABLE (1<<7)
 
 /* NodeConfigs */
 #define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
 #define ARDUINO_NODE_RESET_ENABLE (1<<1)
 #define ARDUINO_BROKER_RESET_ENABLE (1<<2)
+#define ARDUINO_BROKER_CLIDATA_ENABLE (1<<3)
+#define ARDUINO_BROKER_ASSISTANT_RESET_ENABLE (1<<4)
 
 /* Door Clients values*/
 #define DOOR_EVENT_1_MAIN 0x01
 #define DOOR_EVENT_1_NORTH 0x02
 #define DOOR_EVENT_2_SECOND 0x04
 
+uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
+RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
 WiFiUDP ntpUDP;
+uint8_t broker_reset_check = 0;
 char out[256];
 char timeval[32] = {};
-char *Nodename = "East Door";
+char *Nodename = "Second North Door";
 ESP8266WiFiMulti wifiMulti;
 StaticJsonDocument<512> doc;
-uint8_t NodeValue = DOOR_EVENT_1_MAIN;
+uint8_t NodeValue = DOOR_EVENT_2_SECOND;
 const long utcOffsetInSeconds = 3600;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 const char* passwd = "prem@123";
@@ -69,7 +72,6 @@ String clientId2;
 uint8_t mqtt_broker_status_1;
 uint8_t mqtt_broker_status_2;
 
-DHT dht(DHTPIN, DHTTYPE);
 NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 
 /* publish : BrokerEvents, DoorSensorEvents
@@ -77,11 +79,25 @@ NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
  */
 
 struct message {
-	uint8_t SensorBits;
-	uint8_t DoorEnabled;
-	uint8_t doorvalue;
+	/* Data get it from DoorClient */
+	int SensorBits;
 	uint8_t NodeConfigs;
+	int DoorClient;
+	int DoorStatus;
+	int SpeakerStatus;
+	int Temparature;
+	double Pressure;
+	double Altitude;
+	int Humidity;
+	int LightStatus;
+	int MovmentStatus;
+	int CapturePhotos;
+	int NoiseStatus;
+	int GasStatus;
+	int AirQualityStatus;
 
+	/* Data get it from Email Node */
+	uint8_t NodeNumber;
 	uint8_t SpeakerEnable;
 	uint8_t TempSensorEnable;
 	uint8_t LightSensorEnable;
@@ -90,15 +106,15 @@ struct message {
 	uint8_t NoiseSensorEnable;
 	uint8_t GasSensorEnable;
 	uint8_t AirQualitySensorEnable;
-
-/*	float h;
+	float h;
 	float t;
 	float f;
 	float hif;
-	float hic;*/
+	float hic;
 };
 
-struct message config;
+struct message ClientData;
+uint8_t len = sizeof(struct message);
 
 const uint32_t connectTimeoutMs = 5000;
 int HH;
@@ -243,93 +259,73 @@ void browser_config()
 	Serial.printf("Ready! Open http://%s.local in your browser\n", host);
 }
 
-void dht_sensor_data()
-{
-	h = dht.readHumidity();
-	// Read temperature as Celsius (the default)
-	t = dht.readTemperature();
-	// Read temperature as Fahrenheit (isFahrenheit = true)
-	f = dht.readTemperature(true);
-
-	// Check if any reads failed and exit early (to try again).
-	if (isnan(h) || isnan(t) || isnan(f)) {
-		Serial.println(F("Failed to read from DHT sensor!"));
-		return;
+void onData(String topic, byte *data, uint32_t length) {
+	char str[length+1];
+	os_memcpy(str, data, length);
+	str[length] = '\0';
+	Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
+	StaticJsonDocument <256> doc;
+	deserializeJson(doc,str);
+	const char* sensor = doc["sensor"];
+	long time = doc["time"];
+	ClientData.NodeConfigs = doc["serverConfigs"];
+	ClientData.SensorBits = doc["AllConfigs"];
+	if(ClientData.SensorBits & DOOR_ENABLE) {
+		ClientData.DoorStatus = doc["Value"];
+		Serial.print("Door Status Received as: ");
+		Serial.println(ClientData.DoorStatus);
 	}
 
-	// Compute heat index in Fahrenheit (the default)
-	hif = dht.computeHeatIndex(f, h);
-	// Compute heat index in Celsius (isFahreheit = false)
-	hic = dht.computeHeatIndex(t, h, false);
-#if 1
-	Serial.print(F(" Humidity: "));
-	Serial.print(h);
-	Serial.print(F("%  Temperature: "));
-	Serial.print(t);
-	Serial.print(F("C "));
-	Serial.print(f);
-	Serial.print(F("F  Heat index: "));
-	Serial.print(hic);
-	Serial.print(F("C "));
-	Serial.print(hif);
-	Serial.println(F("F"));
-#endif
-}
-
-void payload1_extract(byte* payload)
-{
-	config.SensorBits = (uint8_t)payload[1];
-	Serial.println(config.SensorBits);
-
-	if(config.SensorBits & TEMP_ENABLE) {
-		Serial.println("Temp sensor enabled....");
+	if(ClientData.SensorBits & TEMP_ENABLE) {
+		ClientData.h = doc["Humidity"];
+		ClientData.t = doc["Temp"];
+		ClientData.f = doc["F"];
+		ClientData.hif = doc["HIF"];
+		ClientData.hic = doc["HIC"];
+		Serial.print(F(" Humidity: "));
+		Serial.print(ClientData.h);
+		Serial.print(F("%  Temperature: "));
+		Serial.print(ClientData.t);
+		Serial.print(F("C "));
+		Serial.print(ClientData.f);
+		Serial.print(F("F  Heat index: "));
+		Serial.print(ClientData.hif);
+		Serial.print(F("C "));
+		Serial.print(ClientData.hic);
+		Serial.println(F("F"));
 	}
-}
-
-void payload2_extract(byte* payload)
-{
-	config.NodeConfigs = (uint8_t)payload[2];
-	Serial.println(config.NodeConfigs);
-
-	if(config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
-		Serial.println("Broker retry enabled....");
+	if(ClientData.NodeConfigs & ARDUINO_BROKER_RESET_ENABLE) {
+		uint8_t temp = doc["Value"];
+		broker_reset_check = broker_reset_check | temp;
+	}
+	if(ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
+		Serial.println("Enabled client Data....");
 	}
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
+	//Serial.println("received topic '"+topic+"' with data '"+(String)payload+"'");
 	Serial.print("Message arrived [");
 	Serial.print(topic);
 	Serial.print("] ");
-	for (int i = 0; i < length; i++) {
-		Serial.print((char)payload[i]);
-		switch(i) {
-			case 0:
-				config.doorvalue = payload[0];
-				break;
-			case 1:
-				payload1_extract(payload);
-				break;
-			case 2:
-				payload1_extract(payload);
-				break;
-			default:
-				break;
-		}
-	}
-	Serial.println();
+	onData(topic, payload, length);
 
+}
+void Ciritical_Door_event()
+{
+	Serial.println("Sending to gateway");
+	nrf24.send((uint8_t *)&ClientData.DoorStatus, 1);
+	nrf24.waitPacketSent();
 }
 
 void broker_1_subscribtion()
 {
-	client.subscribe("SensorConfigs");
-	client.subscribe("EnableNodeConfigs");
+	client.subscribe("DoorSensorEvents");
 }
 
 void broker_2_subscribtion()
 {
-	client2.subscribe("SensorConfigs");
-	client2.subscribe("EnableNodeConfigs");
+	client2.subscribe("DoorSensorEvents");
 }
 
 void reconnect() {
@@ -357,7 +353,7 @@ void reconnect() {
 	}
 
 	if(retry2 == 0)	{
-		Serial.println("Retry count is exceeded");
+		//Serial.println("Retry count is exceeded");
 		mqtt_broker_status_1 = 0;
 	}
 }
@@ -516,6 +512,18 @@ void broker_2_config()
 	broker_2_subscribtion();
 }
 
+void nrf_config()
+{
+	if (!nrf24.init()) 
+		Serial.println("init failed");
+
+	if (!nrf24.setChannel(3)) 
+		Serial.println("setChannel failed");
+
+	if (!nrf24.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm))
+		Serial.println("setRF failed");
+}
+
 void setup() {
 
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
@@ -525,15 +533,14 @@ void setup() {
 	Serial.begin(9600);
 	Serial.println("Publisher: Door Events Node");
 
+	nrf_config();
+
 	wifi_scan_config();
 
 	ota_config();
 
-	dht.begin();
-	dht_sensor_data();
-
-	config.SensorBits = 0;
-	config.NodeConfigs = 0;
+	ClientData.SensorBits = 0;
+	ClientData.NodeConfigs = 0;
 
 	timeClient.begin();
 
@@ -545,12 +552,27 @@ void setup() {
 void mqtt_publish(char *pubstr)
 {
 	int b = serializeJson(doc, out);
-	
+
 	if(mqtt_broker_status_1 == 1)
 		boolean rc = client.publish(pubstr, out); 
-	
+
 	if(mqtt_broker_status_2 == 1)
 		boolean rc2 = client2.publish(pubstr, out);
+}
+
+void mqtt_broker_clidata(uint8_t event)
+{
+	doc["sensor"] = "misc";
+	doc["AllConfigs"] = 0;
+	doc["serverConfigs"] = event;
+	doc["time"] = timeval;
+	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
+	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["NodeName"] = Nodename;
+
+	doc["Value"] = NodeValue;
+	mqtt_publish("DoorSensorEvents");
 }
 
 void mqtt_broker_reset(uint8_t event)
@@ -593,7 +615,7 @@ void temp_sensor_config()
 	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
 	doc["NodeIPAddress"] = WiFi.SSID();
 	doc["NodeName"] = Nodename;
-	
+
 	doc["Value"] = 0;
 	doc["Humidity"] = h;
 	doc["Temp"] = t;
@@ -648,44 +670,52 @@ void broker_status_check()
 	}
 }
 
-void dev_events_check()
+void receive_data_from_mesh()
 {
-	if (digitalRead(D5) == 1) {
-		Serial.println("Door is open");
-		dooropen_msgsend(NodeValue);
-		config.DoorEnabled = 1;
-	}
-
-	if (config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
-		retry = 5;
-		retry2 = 5;
-		config.NodeConfigs &= ~ARDUINO_BROKER_RETRY_ENABLE;
-	}
-
-	/* Sending to Broker */
-	if (mqtt_broker_status_1 == 0 && retry == 0) {
-		mqtt_broker_reset(ARDUINO_BROKER_RESET_ENABLE);
-		retry = 5;
-		retry2 = 5;
-	}
-
-	/* Door Sensor fullnode restart */
-	if (config.NodeConfigs & ARDUINO_NODE_RESET_ENABLE) {
-		if(config.doorvalue & NodeValue) {
-			ESP.restart();
-			config.NodeConfigs &= ~ARDUINO_NODE_RESET_ENABLE;
+	uint8_t i = 0;
+	if (nrf24.waitAvailableTimeout(1000)){  
+		if (nrf24.recv(buf, &len)){
+			memcpy((uint8_t *)&ClientData, buf, sizeof(struct message));
+			Serial.println();
 		}
+		else
+		{
+			Serial.println("recv failed");
+		}
+
 	}
+	else
+	{
+	}
+
 }
 
-void config_events_check()
+void dev_events_check()
 {
-	if (config.SensorBits & TEMP_ENABLE) {
-		if(config.doorvalue & NodeValue) {
-			temp_sensor_config();
-			config.SensorBits &= ~TEMP_ENABLE;
-		}
+	if (ClientData.DoorStatus & DOOR_EVENT_1_MAIN)
+	{
+		//enable_config();
+		Ciritical_Door_event();
+		ClientData.DoorStatus &=~DOOR_EVENT_1_MAIN;
 	}
+	if (ClientData.DoorStatus & DOOR_EVENT_1_NORTH)
+	{
+		Ciritical_Door_event();
+		ClientData.DoorStatus &=~DOOR_EVENT_1_NORTH;
+	}
+	if (ClientData.DoorStatus & DOOR_EVENT_2_SECOND)
+	{
+		Ciritical_Door_event();
+		ClientData.DoorStatus &=~DOOR_EVENT_2_SECOND;
+	}
+
+	if (ClientData.NodeConfigs & ARDUINO_BROKER_ASSISTANT_RESET_ENABLE)
+	{
+		//validate_broker_reset();
+		ClientData.NodeConfigs &=~ARDUINO_BROKER_ASSISTANT_RESET_ENABLE;
+	}
+
+	receive_data_from_mesh();
 }
 
 void loop()
@@ -693,7 +723,7 @@ void loop()
 	if ( WiFi.status() != WL_CONNECTED ) {
 		ESP.restart();
 	}
-	
+
 	server.handleClient();
 	MDNS.update();
 
@@ -704,8 +734,6 @@ void loop()
 	config_time();
 
 	dev_events_check();
-
-	config_events_check();
 
 	client.loop();
 	client2.loop();

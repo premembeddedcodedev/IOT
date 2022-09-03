@@ -40,12 +40,18 @@
 #define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
 #define ARDUINO_NODE_RESET_ENABLE (1<<1)
 #define ARDUINO_BROKER_RESET_ENABLE (1<<2)
+#define ARDUINO_BROKER_CLIDATA_ENABLE (1<<3)
 
 /* Door Nodes:
  *	publish : BrokerEvents, DoorSensorEvents
  * 	subscribe: SensorConfigs, EnableNodeConfigs
  */
-
+WiFiClient espClient;
+PubSubClient client(espClient);
+String clientId;
+String ipaddr[7];
+int retry2 = 5;
+int clientcount = 0;
 const uint32_t connectTimeoutMs = 5000;
 uint8_t broker_reset_check = 0;
 const char* passwd = "prem@123";
@@ -97,7 +103,7 @@ uint8_t len = sizeof(struct message);
 /*
  * Your WiFi config here
  */
-char ssid[] = "SHSIAAP2";     // your network SSID (name)
+char ssid[] = "TP-Link_F524";     // your network SSID (name)
 char pass[] = "prem@123"; // your network password
 bool WiFiAP = false;      // Do yo want the ESP as AP?
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
@@ -216,6 +222,13 @@ void browser_config()
 	MDNS.addService("http", "tcp", 80);
 	Serial.printf("Ready! Open http://%s.local in your browser\n", host);
 }
+//void callback(char* topic, byte* payload, unsigned int length) {
+//}
+void clients_connected(String str)
+{
+	ipaddr[clientcount] = str;
+	clientcount++;
+}
 
 /*
  * Custom broker class with overwritten callback functions
@@ -225,6 +238,7 @@ class myMQTTBroker: public uMQTTBroker
 	public:
 		virtual bool onConnect(IPAddress addr, uint16_t client_count) {
 			Serial.println(addr.toString()+" connected");
+			clients_connected(addr.toString());
 			return true;
 		}
 
@@ -238,7 +252,7 @@ class myMQTTBroker: public uMQTTBroker
 			char str[length+1];
 			os_memcpy(str, data, length);
 			str[length] = '\0';
-			//Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
+			Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
 #else
 			char str[length+1];
 			int i;
@@ -258,37 +272,28 @@ class myMQTTBroker: public uMQTTBroker
 			const char* sensor = doc["sensor"];
 			long time = doc["time"];
 			ClientData.NodeConfigs = doc["serverConfigs"];
-			ClientData.SensorBits = doc["AllConfigs"];
-			if(ClientData.SensorBits & DOOR_ENABLE) {
-				ClientData.DoorStatus = doc["Value"];
-				Serial.print("Door Status Received as: ");
-				Serial.println(ClientData.DoorStatus);
-			}
-
-			if(ClientData.SensorBits & TEMP_ENABLE) {
-				ClientData.h = doc["Humidity"];
-				ClientData.t = doc["Temp"];
-				ClientData.f = doc["F"];
-				ClientData.hif = doc["HIF"];
-				ClientData.hic = doc["HIC"];
-				Serial.print(F(" Humidity: "));
-				Serial.print(ClientData.h);
-				Serial.print(F("%  Temperature: "));
-				Serial.print(ClientData.t);
-				Serial.print(F("C "));
-				Serial.print(ClientData.f);
-				Serial.print(F("F  Heat index: "));
-				Serial.print(ClientData.hif);
-				Serial.print(F("C "));
-				Serial.print(ClientData.hic);
-				Serial.println(F("F"));
-			}
 
 			if(ClientData.NodeConfigs & ARDUINO_BROKER_RESET_ENABLE) {
 				uint8_t temp = doc["Value"];
 				broker_reset_check = broker_reset_check | temp;
 			}
+			if(ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
+				Serial.println("Enabled client Data....");
+			}
 
+		}
+		virtual void printClients() {
+			for (int i = 0; i < getClientCount(); i++) {
+				IPAddress addr;
+				String client_id;
+
+				getClientAddr(i, addr);
+				getClientId(i, client_id);
+				Serial.println("Client "+client_id+" on addr: "+addr.toString());
+				char timeval[64] = {};
+				sprintf(timeval, "%s, %s", client_id, addr.toString());
+				//clients_connected(timeval);
+			}
 		}
 };
 
@@ -330,18 +335,27 @@ void mqtt_publish(char *pubstr)
 	myBroker.publish(pubstr, out);
 }
 
-void mqtt_broker_reset(uint8_t event)
+void mqtt_broker_clidata()
 {
-	doc["sensor"] = "Door";
+	//digitalWrite(BUILTIN_LED, HIGH);     // Initialize the BUILTIN_LED pin as an output
+	doc["sensor"] = "BrokerData";
 	doc["NodeIPAddress"] = WiFi.SSID();
 	doc["BrokerName"] = brokername;
+	doc["client0"] = ipaddr[0];
+	doc["client1"] = ipaddr[1];
+	doc["client2"] = ipaddr[2];
+	doc["BrokerName"] = brokername;
 
-	mqtt_publish("EnableConfigs");
+	//int b = serializeJson(doc, out);
+	myBroker.publish("RxFromBroker", (String)1);
+	//digitalWrite(BUILTIN_LED, LOW);     // Initialize the BUILTIN_LED pin as an output
+	Serial.println("Data Sent to broker.....");
+	//mqtt_publish("ClientsData");
 }
 /*JSON buffer End*/
 
 void callback(char* topic, byte* payload, unsigned int length) {
-        Serial.print(topic);
+	Serial.print(topic);
 }
 
 void enable_config()
@@ -420,107 +434,115 @@ void nrf_config()
 void scan()
 {
 #if 1
-        String ssid;
-        int32_t rssi;
-        uint8_t encryptionType;
-        uint8_t* bssid;
-        int32_t channel;
-        bool hidden;
-        int scanResult;
+	String ssid;
+	int32_t rssi;
+	uint8_t encryptionType;
+	uint8_t* bssid;
+	int32_t channel;
+	bool hidden;
+	int scanResult;
 
-        Serial.println(F("Starting WiFi scan..."));
+	Serial.println(F("Starting WiFi scan..."));
 
-        scanResult = WiFi.scanNetworks(/*async=*/false, /*hidden=*/true);
+	scanResult = WiFi.scanNetworks(/*async=*/false, /*hidden=*/true);
 
-        if (scanResult == 0) {
-                Serial.println(F("No networks found"));
-        } else if (scanResult > 0) {
-                Serial.printf(PSTR("%d networks found:\n"), scanResult);
+	if (scanResult == 0) {
+		Serial.println(F("No networks found"));
+	} else if (scanResult > 0) {
+		Serial.printf(PSTR("%d networks found:\n"), scanResult);
 
-                // Print unsorted scan results
-                for (int8_t i = 0; i < scanResult; i++) {
-                        WiFi.getNetworkInfo(i, ssid, encryptionType, rssi, bssid, channel, hidden);
+		// Print unsorted scan results
+		for (int8_t i = 0; i < scanResult; i++) {
+			WiFi.getNetworkInfo(i, ssid, encryptionType, rssi, bssid, channel, hidden);
 
-                        Serial.printf(PSTR("  %02d: [CH %02d] [%02X:%02X:%02X:%02X:%02X:%02X] %ddBm %c %c %s \n"),
-                                        i,
-                                        channel,
-                                        bssid[0], bssid[1], bssid[2],
-                                        bssid[3], bssid[4], bssid[5],
-                                        rssi,
-                                        (encryptionType == ENC_TYPE_NONE) ? ' ' : '*',
-                                        hidden ? 'H' : 'V',
-                                        ssid.c_str());
-                        delay(0);
-                }
-        } else {
-                Serial.printf(PSTR("WiFi scan error %d"), scanResult);
-        }
+			Serial.printf(PSTR("  %02d: [CH %02d] [%02X:%02X:%02X:%02X:%02X:%02X] %ddBm %c %c %s \n"),
+					i,
+					channel,
+					bssid[0], bssid[1], bssid[2],
+					bssid[3], bssid[4], bssid[5],
+					rssi,
+					(encryptionType == ENC_TYPE_NONE) ? ' ' : '*',
+					hidden ? 'H' : 'V',
+					ssid.c_str());
+			delay(0);
+		}
+	} else {
+		Serial.printf(PSTR("WiFi scan error %d"), scanResult);
+	}
 #else
-        // WiFi.scanNetworks will return the number of networks found
-        int n = WiFi.scanNetworks();
-        Serial.println("scan done");
-        if (n == 0) {
-                Serial.println("no networks found");
-        }
-        else {
-                Serial.print(n);
-                Serial.println(" networks found");
-                for (int i = 0; i < n; ++i) {
-                        Serial.print(i + 1);
-                        Serial.print(": ");
-                        Serial.print(WiFi.SSID(i));
-                        Serial.print(" (");
-                        Serial.print(WiFi.RSSI(i));
-                        Serial.print(")");
-                        Serial.println();
-                        delay(10);
-                }
-        }
+	// WiFi.scanNetworks will return the number of networks found
+	int n = WiFi.scanNetworks();
+	Serial.println("scan done");
+	if (n == 0) {
+		Serial.println("no networks found");
+	}
+	else {
+		Serial.print(n);
+		Serial.println(" networks found");
+		for (int i = 0; i < n; ++i) {
+			Serial.print(i + 1);
+			Serial.print(": ");
+			Serial.print(WiFi.SSID(i));
+			Serial.print(" (");
+			Serial.print(WiFi.RSSI(i));
+			Serial.print(")");
+			Serial.println();
+			delay(10);
+		}
+	}
 #endif
 }
 
 void wifi_scan_config()
 {
-        WiFi.disconnect();
-        scan();
-        WiFi.persistent(false);
-        wifiMulti.addAP("SHSIAAP2", passwd);
-        wifiMulti.addAP("JioFiber5G", passwd);
-        wifiMulti.addAP("JioFiber4g", passwd);
-        wifiMulti.addAP("TP-Link_F524", passwd);
-        wifiMulti.addAP("TP-Link_F524_5G", passwd);
+	WiFi.disconnect();
+	scan();
+	WiFi.persistent(false);
+	wifiMulti.addAP("SHSIAAP2", passwd);
+	wifiMulti.addAP("JioFiber5G", passwd);
+	wifiMulti.addAP("JioFiber4g", passwd);
+	wifiMulti.addAP("TP-Link_F524", passwd);
+	wifiMulti.addAP("TP-Link_F524_5G", passwd);
 
-        if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
-                Serial.print("WiFi connected: ");
-                Serial.print(WiFi.SSID());
-                Serial.print(" ");
-                Serial.println(WiFi.localIP());
-        } else {
-                Serial.println("WiFi not connected!");
-                ESP.restart();
-        }
+	if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
+		Serial.print("WiFi connected: ");
+		Serial.print(WiFi.SSID());
+		Serial.print(" ");
+		Serial.println(WiFi.localIP());
+	} else {
+		Serial.println("WiFi not connected!");
+		ESP.restart();
+	}
+}
+void broker_1_subscribtion()
+{
+	client.subscribe("SensorConfigs");
+	client.subscribe("EnableNodeConfigs");
+	client.subscribe("RxFromBroker");
+}
+
+void broker_1_config()
+{
+	client.setServer("192.168.29.21", 1884);
+	//client.setCallback(callback);
+	broker_1_subscribtion();
 }
 
 void setup()
 {
+	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
 	Serial.begin(9600);
 
 	wifi_scan_config();
 
-/*	if (WiFiAP)
-		startWiFiAP();
-	else
-		startWiFiClient();
-*/
 	ota_config();
 	Serial.println("Starting PVs MQTT broker - 1");
 	myBroker.init();
-	nrf_config();
 
 	Serial.println("NRF config Completed");
 
-	myBroker.subscribe("DoorSensorEvents");
 	myBroker.subscribe("BrokerEvents");
+	myBroker.subscribe("ClientsData");
 	browser_config();
 }
 
@@ -586,33 +608,51 @@ void receive_data_from_mesh()
 
 void validate_broker_reset()
 {
-/*	if(broker_reset_check == 0x4)
+	/*	if(broker_reset_check == 0x4)
 		ESP.restart();*/
+}
+
+void reconnect() {
+	// Loop until we're reconnected
+	while (!client.connected() && (retry2 > 0)) {
+		retry2--;
+		Serial.print("Attempting 1-MQTT connection...");
+		// Create a random client ID
+		clientId = "ESP8266Client-";
+		clientId += String(random(0xffff), HEX);
+		Serial.print(clientId);
+		// Attempt to connect
+		if (client.connect(clientId.c_str())) {
+			Serial.println("connected");
+			//mqtt_broker_status_1 = 1;
+			client.publish("outTopic", "hello world");
+			broker_1_subscribtion();
+		} else {
+			Serial.print("failed, rc=");
+			Serial.print(client.state());
+			Serial.println(" try again in 5 seconds");
+			// Wait 5 seconds before retrying
+			delay(5000);
+		}
+	}
+
+	if(retry2 == 0)	{
+		Serial.println("Retry count is exceeded");
+		//mqtt_broker_status_1 = 0;
+	}
 }
 
 void loop()
 {
+#if 0
+	if (!client.connected()) {
+		reconnect();
+	}
+#endif
 	/*
 	 * Publish the counter value as String
 	 */
 	ArduinoOTA.handle();
-
-	if (ClientData.DoorStatus & DOOR_EVENT_1_MAIN)
-	{
-		//enable_config();
-		Ciritical_Door_event();
-		ClientData.DoorStatus &=~DOOR_EVENT_1_MAIN;
-	}
-	if (ClientData.DoorStatus & DOOR_EVENT_1_NORTH)
-	{
-		Ciritical_Door_event();
-		ClientData.DoorStatus &=~DOOR_EVENT_1_NORTH;
-	}
-	if (ClientData.DoorStatus & DOOR_EVENT_2_SECOND)
-	{
-		Ciritical_Door_event();
-		ClientData.DoorStatus &=~DOOR_EVENT_2_SECOND;
-	}
 
 	if (ClientData.NodeConfigs & ARDUINO_BROKER_RESET_ENABLE)
 	{
@@ -620,8 +660,11 @@ void loop()
 		ClientData.NodeConfigs &=~ARDUINO_BROKER_RESET_ENABLE;
 	}
 
-	receive_data_from_mesh();
+	if (ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE)
+	{
+		mqtt_broker_clidata();
+		ClientData.NodeConfigs &=~ARDUINO_BROKER_CLIDATA_ENABLE;
+	}
 
-	delay(1000);
 }
 
