@@ -346,7 +346,6 @@ void broker_2_subscribtion()
 void reconnect() {
 	// Loop until we're reconnected
 	while (!client.connected() && (retry2 > 0)) {
-		retry2--;
 		Serial.print("Attempting 1-MQTT connection...");
 		// Create a random client ID
 		clientId = "ESP8266Client-";
@@ -354,7 +353,8 @@ void reconnect() {
 		Serial.print(clientId);
 		// Attempt to connect
 		if (client.connect(clientId.c_str())) {
-			Serial.println("connected");
+			Serial.println("connected");	
+			retry2 = 5;
 			mqtt_broker_status_1 = 1;
 			client.publish("BCoutTopic", "BrokerConsumer-1");
 			broker_1_subscribtion();
@@ -365,12 +365,15 @@ void reconnect() {
 			// Wait 5 seconds before retrying
 			delay(5000);
 		}
+		if(retry2 == 1)	{
+			Serial.println("1- MQTT Retry count is exceeded");
+			retry2--;
+			mqtt_broker_status_1 = 0;
+			break;
+		}
+		retry2--;
 	}
 
-	if(retry2 == 0)	{
-		//Serial.println("Retry count is exceeded");
-		mqtt_broker_status_1 = 0;
-	}
 }
 
 void ota_config()
@@ -488,13 +491,13 @@ void wifi_scan_config()
 void client_connect() {
 	// Loop until we're reconnected
 	while (!client2.connected() && retry > 0) {
-		retry--;
 		clientId2 = "ESP8266Client-";
 		clientId2 += String(random(0xffff), HEX);
 		Serial.print("Attempting 2-MQTT connection for ...");
 		Serial.print(clientId2);
 		if (client2.connect(clientId2.c_str())) {
 			Serial.println("connected");
+			retry = 5;
 			mqtt_broker_status_2 = 1;
 			client2.publish("BCoutTopic", "BrokerCLient-2");
 			broker_2_subscribtion();
@@ -504,13 +507,16 @@ void client_connect() {
 			Serial.println(" try again in 5 seconds");
 			delay(5000);
 		}
+		if(retry == 1)	{
+			Serial.println("2-MQTT Retry count is exceeded");
+			retry--;
+			mqtt_broker_status_2 = 0;
+			break;
+		}
+		retry--;
 	}
 
 
-	if(retry == 0)	{
-		Serial.println("Retry count is exceeded");
-		mqtt_broker_status_2 = 0;
-	}
 }
 
 void broker_1_config()
@@ -708,5 +714,5 @@ void loop()
 	client.loop();
 	client2.loop();
 
-	delay(5000);
+	delay(1000);
 }

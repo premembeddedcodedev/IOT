@@ -6,7 +6,7 @@ PORT?=/dev/ttyUSB0
 
 .PHONY: default compile
 
-default: compile
+default: clean compile
 	@echo "===========In Default build============="
 
 #all: req-libs-header lib-install compile flash clean
@@ -33,15 +33,20 @@ lint:
 compile:
 	#arduino-cli compile --fqbn $(BOARD) ./ --output-dir ./out --show-properties
 	arduino-cli compile --fqbn $(BOARD) ./ --output-dir ./out
-
+	$(shell) ls ./out/
 flash:
-	arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	#arduino-cli upload --fqbn $(BOARD) -p $(PORT) ./
+	arduino-cli upload --fqbn $(BOARD) -p $(PORT) --input-dir ./out/
 
 clean:
 	rm -rf out
 
 ota:
-	python ../tools/espota.py -i 192.168.29.119 -f ./out/OTA.ino.bin
+	python ./espota.py -i 192.168.29.232 -f ./out/3.DoorClient-1_N.ino.bin
+	rm -rf out
+
+ota_old:
+	#python ../tools/espota.py -i 192.168.29.119 -f ./out/OTA.ino.bin
 	#@PLAT_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.platform.path' | awk -F= '{print $$2}'` ; \
 	   PY_PATH=`arduino-cli compile -b $(FQBN) --show-properties | grep '^runtime.tools.python3.path' | awk -F= '{print $$2}'` ; \
 	IOT_IP=`avahi-browse _arduino._tcp --resolve --parsable --terminate|grep -i ';$(IOT_NAME);'|grep ';$(OTA_PORT);'| awk -F\; '{print $$8}'|head -1`; \
