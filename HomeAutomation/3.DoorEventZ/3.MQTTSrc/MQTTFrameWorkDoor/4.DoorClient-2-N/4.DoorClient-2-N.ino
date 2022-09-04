@@ -38,20 +38,20 @@
 #define LIGHT_ENABLE	(1<<2)
 #define SPEAKER_ENABLE	(1<<3)
 #define MOVEMENT_ENABLE (1<<4)
-#define PHOTOS_ENABLE (1<<5)
-#define NOISE_ENABLE (1<<6)
-#define GAS_ENABLE (1<<7)
+#define PHOTOS_ENABLE	(1<<5)
+#define NOISE_ENABLE	(1<<6)
+#define GAS_ENABLE	(1<<7)
 
-/* NodeConfigs */
-#define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
-#define ARDUINO_NODE_RESET_ENABLE (1<<1)
-#define ARDUINO_BROKER_RESET_ENABLE (1<<2)
-#define ARDUINO_BROKER_CLIDATA_ENABLE (1<<3)
+/* payload_1 */
+#define ARDUINO_BROKER_RETRY_ENABLE 	(1<<0) /* value - 1 for pub*/
+#define ARDUINO_NODE_RESET_ENABLE	(1<<1) /* value - 2 for pub*/
+#define ARDUINO_BROKER_RESET_ENABLE	(1<<2) /* value - 3 for pub*/
+#define ARDUINO_BROKER_CLIDATA_ENABLE	(1<<3) /* value - 4 for pub*/
 
 /* Door Clients values*/
-#define DOOR_EVENT_1_MAIN 0x01
-#define DOOR_EVENT_1_NORTH 0x02
-#define DOOR_EVENT_2_SECOND 0x04
+#define DOOR_EVENT_1_MAIN	0x01
+#define DOOR_EVENT_1_NORTH	0x02
+#define DOOR_EVENT_2_SECOND	0x04
 
 WiFiUDP ntpUDP;
 char out[256];
@@ -78,10 +78,10 @@ NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
  */
 
 struct message {
-	uint8_t SensorBits;
+	uint8_t payload_0;
 	uint8_t DoorEnabled;
 	uint8_t doorvalue;
-	uint8_t NodeConfigs;
+	uint8_t payload_1;
 
 	uint8_t SpeakerEnable;
 	uint8_t TempSensorEnable;
@@ -277,29 +277,6 @@ void dht_sensor_data()
 #endif
 }
 
-void payload1_extract(byte* payload)
-{
-	config.SensorBits = (uint8_t)payload[1];
-	Serial.println(config.SensorBits);
-
-	if(config.SensorBits & TEMP_ENABLE) {
-		Serial.println("Temp sensor enabled....");
-	}
-}
-
-void payload2_extract(byte* payload)
-{
-	config.NodeConfigs = (uint8_t)payload[2];
-	Serial.println(config.NodeConfigs);
-
-	if(config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
-		Serial.println("Broker retry enabled....");
-	}
-	if(config.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
-		Serial.println("Broker Clidata enabled....");
-	}
-}
-
 void callback(char* topic, byte* payload, unsigned int length) {
 	//Serial.println("received topic '"+topic+"' with data '"+(String)payload+"'");
 	Serial.print("Message arrived [");
@@ -308,34 +285,27 @@ void callback(char* topic, byte* payload, unsigned int length) {
 	for (int i = 0; i < length; i++) {
 		switch(i) {
 			case 0:
-				config.doorvalue = payload[0];
-				Serial.println(config.doorvalue);
+				config.payload_0 = (uint8_t)(payload[0] - '0');
+				Serial.println(config.payload_0);
 				break;
 			case 1:
-				payload1_extract(payload);
-				break;
-			case 2:
-				payload2_extract(payload);
+				config.payload_1 = (uint8_t)(payload[1] - '0');
+				Serial.println(config.payload_1);
 				break;
 			default:
 				break;
 		}
 	}
 	Serial.println();
-
 }
 
 void broker_1_subscribtion()
 {
-	client.subscribe("SensorConfigs");
-	client.subscribe("EnableNodeConfigs");
 	client.subscribe("RxFromBroker");
 }
 
 void broker_2_subscribtion()
 {
-	client2.subscribe("SensorConfigs");
-	client2.subscribe("EnableNodeConfigs");
 	client2.subscribe("RxFromBroker");
 }
 
@@ -539,8 +509,8 @@ void setup() {
 	dht.begin();
 	dht_sensor_data();
 
-	config.SensorBits = 0;
-	config.NodeConfigs = 0;
+	config.payload_0 = 0;
+	config.payload_1 = 0;
 
 	timeClient.begin();
 
@@ -553,11 +523,15 @@ void mqtt_publish(char *pubstr)
 {
 	int b = serializeJson(doc, out);
 
-	if(mqtt_broker_status_1 == 1)
+	if(mqtt_broker_status_1 == 1) {
+		Serial.println("Sending to Arduino Broker......");
 		boolean rc = client.publish(pubstr, out); 
+	}
 
-	if(mqtt_broker_status_2 == 1)
+	if(mqtt_broker_status_2 == 1) {
+		Serial.println("Sending to PC Broker......");
 		boolean rc2 = client2.publish(pubstr, out);
+	}
 }
 
 void mqtt_broker_clidata(uint8_t event)
@@ -572,7 +546,7 @@ void mqtt_broker_clidata(uint8_t event)
 	doc["NodeName"] = Nodename;
 
 	doc["Value"] = NodeValue;
-	mqtt_publish("DoorSensorEvents");
+	mqtt_publish("BrokerEvents");
 }
 
 void mqtt_broker_reset(uint8_t event)
@@ -678,39 +652,39 @@ void dev_events_check()
 		config.DoorEnabled = 1;
 	}
 
-	if (config.NodeConfigs & ARDUINO_BROKER_RETRY_ENABLE) {
+	if (config.payload_1 & ARDUINO_BROKER_RETRY_ENABLE) {
 		retry = 5;
 		retry2 = 5;
-		config.NodeConfigs &= ~ARDUINO_BROKER_RETRY_ENABLE;
+		config.payload_1 &= ~ARDUINO_BROKER_RETRY_ENABLE;
 	}
-
+#if 0
 	/* Sending to Broker */
 	if (mqtt_broker_status_1 == 0 && retry == 0) {
 		mqtt_broker_reset(ARDUINO_BROKER_RESET_ENABLE);
 		retry = 5;
 		retry2 = 5;
 	}
-
+#endif
 	/* Door Sensor fullnode restart */
-	if (config.NodeConfigs & ARDUINO_NODE_RESET_ENABLE) {
-		if(config.doorvalue & NodeValue) {
+	if (config.payload_1 & ARDUINO_NODE_RESET_ENABLE) {
+		//if(config.doorvalue & NodeValue) {
 			ESP.restart();
-			config.NodeConfigs &= ~ARDUINO_NODE_RESET_ENABLE;
-		}
+			config.payload_1 &= ~ARDUINO_NODE_RESET_ENABLE;
+		//}
 	}
 
-	if (config.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
+	if (config.payload_1 & ARDUINO_BROKER_CLIDATA_ENABLE) {
 		mqtt_broker_clidata(ARDUINO_BROKER_CLIDATA_ENABLE);
-		config.NodeConfigs &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
+		config.payload_1 &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
 }
 
 void config_events_check()
 {
-	if (config.SensorBits & TEMP_ENABLE) {
+	if (config.payload_0 & TEMP_ENABLE) {
 		if(config.doorvalue & NodeValue) {
 			temp_sensor_config();
-			config.SensorBits &= ~TEMP_ENABLE;
+			config.payload_0 &= ~TEMP_ENABLE;
 		}
 	}
 }

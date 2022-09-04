@@ -26,7 +26,7 @@
 #define NUMCLIENTS 3
 #define DOOR_EVENT_2 0x03
 
-/* SensorBits Enablement */
+/* payload_0 Enablement */
 #define DOOR_ENABLE (1<<0)
 #define TEMP_ENABLE (1<<1)
 #define LIGHT_ENABLE (1<<2)
@@ -36,11 +36,10 @@
 #define NOISE_ENABLE (1<<6)
 #define GAS_ENABLE (1<<7)
 
-/* NodeConfigs */
-#define ARDUINO_BROKER_RETRY_ENABLE (1<<0)
-#define ARDUINO_NODE_RESET_ENABLE (1<<1)
-#define ARDUINO_BROKER_RESET_ENABLE (1<<2)
-#define ARDUINO_BROKER_CLIDATA_ENABLE (1<<3)
+/* payload_1 */
+#define ARDUINO_BROKER_RESET_ENABLE	(1<<2)
+#define ARDUINO_BROKER_CLIDATA_ENABLE	(1<<3)
+#define ARDUINO_BROKER_INIT_RESET_ENABLE 2
 
 /* Door Nodes:
  *	publish : BrokerEvents, DoorSensorEvents
@@ -49,7 +48,7 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 String clientId;
-String ipaddr[7];
+char *ipaddr[32];
 int retry2 = 5;
 int clientcount = 0;
 const uint32_t connectTimeoutMs = 5000;
@@ -61,8 +60,8 @@ String readings;
 uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 struct message {
 	/* Data get it from DoorClient */
-	int SensorBits;
-	uint8_t NodeConfigs;
+	uint8_t payload_0;
+	uint8_t payload_1;
 	int DoorClient;
 	int DoorStatus;
 	int SpeakerStatus;
@@ -108,7 +107,7 @@ char pass[] = "prem@123"; // your network password
 bool WiFiAP = false;      // Do yo want the ESP as AP?
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
 int value = 0;
-const char* host = "esp8266-webupdate";
+const char* host = "esp8266-broker";
 /* Web Server config -- start*/
 ESP8266WebServer server(80);
 //const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
@@ -222,17 +221,84 @@ void browser_config()
 	MDNS.addService("http", "tcp", 80);
 	Serial.printf("Ready! Open http://%s.local in your browser\n", host);
 }
-//void callback(char* topic, byte* payload, unsigned int length) {
-//}
-void clients_connected(String str)
-{
-	ipaddr[clientcount] = str;
-	clientcount++;
-}
 
-/*
- * Custom broker class with overwritten callback functions
- */
+char* timeval[10];
+
+#if 0
+void clients_connected(char* str)
+{
+	for (int i = 0; i < getClientCount(); i++) {
+		IPAddress addr;
+		String client_id;
+
+		getClientAddr(i, addr);
+		getClientId(i, client_id);
+		//Serial.println("Client "+client_id+" on addr: "+addr.toString());
+		sprintf(timeval[i], "%s, %s", client_id, addr.toString());
+		ipaddr[i] = timeval[i];
+	}
+	clientcount = getClientCount();
+}
+#endif
+class myMQTTBroker: public uMQTTBroker
+{
+	public:
+		virtual bool onConnect(IPAddress addr, uint16_t client_count) {
+			Serial.println(addr.toString()+" connected");
+			return true;
+		}
+
+		virtual void onDisconnect(IPAddress addr, String client_id) {
+			Serial.println(addr.toString()+" ("+client_id+") disconnected");
+		}
+
+		virtual bool onAuth(String username, String password, String client_id) {
+			Serial.println("Username/Password/ClientId: "+username+"/"+password+"/"+client_id);
+			return true;
+		}
+
+		virtual void onData(String topic, const char *data, uint32_t length) {
+			char str[length+1];
+			os_memcpy(str, data, length);
+			str[length] = '\0';
+
+			Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
+			printClients();
+			StaticJsonDocument <256> doc;
+			deserializeJson(doc,str);
+
+			const char* sensor = doc["sensor"];
+			long time = doc["time"];
+			uint8_t temp = doc["Value"];
+			ClientData.payload_0 = doc["AllConfigs"];
+			ClientData.payload_1 = doc["serverConfigs"];
+
+			if(ClientData.payload_1 & ARDUINO_BROKER_RESET_ENABLE)
+				broker_reset_check = broker_reset_check | temp;
+
+			if(ClientData.payload_1 & ARDUINO_BROKER_CLIDATA_ENABLE) {
+				Serial.println("Enabled client Data....");
+			}
+		}
+
+		virtual void printClients() {
+			for (int i = 0; i < getClientCount(); i++) {
+				IPAddress addr;
+				String client_id;
+				char copy[32];
+				getClientAddr(i, addr);
+				getClientId(i, client_id);
+				strcpy(timeval[i], addr.toString().c_str());
+				//client_id.toCharArray(copy, client_id.length());
+				//strcat(timeval[i], copy);
+				Serial.println("Client "+client_id+" on addr: "+addr.toString());
+				//sprintf(timeval[i], "%s, %s", client_id, addr.toString());
+				//ipaddr[i] = timeval[i];
+				clientcount = getClientCount();
+			}
+		}
+};
+#if 0
 class myMQTTBroker: public uMQTTBroker
 {
 	public:
@@ -247,41 +313,6 @@ class myMQTTBroker: public uMQTTBroker
 			return true;
 		}
 
-		virtual void onData(String topic, const char *data, uint32_t length) {
-#if 1
-			char str[length+1];
-			os_memcpy(str, data, length);
-			str[length] = '\0';
-			Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
-#else
-			char str[length+1];
-			int i;
-			Serial.print("Message arrived [");
-			Serial.print(topic);
-			Serial.print("] ");
-			for ( i = 0; i < length; i++) {
-				str[i]=(char)data[i];
-				//Serial.print((char)data[i]);
-			}
-
-			str[i] = 0;
-			Serial.println();
-#endif
-			StaticJsonDocument <256> doc;
-			deserializeJson(doc,str);
-			const char* sensor = doc["sensor"];
-			long time = doc["time"];
-			ClientData.NodeConfigs = doc["serverConfigs"];
-
-			if(ClientData.NodeConfigs & ARDUINO_BROKER_RESET_ENABLE) {
-				uint8_t temp = doc["Value"];
-				broker_reset_check = broker_reset_check | temp;
-			}
-			if(ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
-				Serial.println("Enabled client Data....");
-			}
-
-		}
 		virtual void printClients() {
 			for (int i = 0; i < getClientCount(); i++) {
 				IPAddress addr;
@@ -295,8 +326,32 @@ class myMQTTBroker: public uMQTTBroker
 				//clients_connected(timeval);
 			}
 		}
-};
 
+		virtual void onData(String topic, const char *data, uint32_t length) {
+			/*myBroker.subscribe("BrokerEvents");*/
+			char str[length+1];
+			os_memcpy(str, data, length);
+			str[length] = '\0';
+			Serial.println("received topic '"+topic+"' with data '"+(String)str+"'");
+			StaticJsonDocument <256> doc;
+			deserializeJson(doc,str);
+
+			const char* sensor = doc["sensor"];
+			long time = doc["time"];
+			ClientData.payload_1 = doc["serverConfigs"];
+
+			if(ClientData.payload_1 & ARDUINO_BROKER_RESET_ENABLE) {
+				uint8_t temp = doc["Value"];
+				broker_reset_check = broker_reset_check | temp;
+			}
+
+			if(ClientData.payload_1 & ARDUINO_BROKER_CLIDATA_ENABLE) {
+				Serial.println("Enabled client Data....");
+			}
+
+		}
+};
+#endif
 myMQTTBroker myBroker;
 
 void Ciritical_Door_event()
@@ -309,7 +364,7 @@ String EnableConfigDataForDoor(int NodeNumber)
 {
 	JSONVar jsonReadings;
 	jsonReadings["Node"] = NodeNumber;
-	jsonReadings["SensorBits"] = ClientData.SensorBits;
+	jsonReadings["SensorBits"] = ClientData.payload_0;
 	readings = JSON.stringify(jsonReadings);
 	return readings;
 }
@@ -325,7 +380,6 @@ int GetNodeNumber(int Data)
 
 	return ClientData.NodeNumber;
 }
-/*JSON buffer Start*/
 char out[128];
 StaticJsonDocument<256> doc;
 
@@ -335,60 +389,46 @@ void mqtt_publish(char *pubstr)
 	myBroker.publish(pubstr, out);
 }
 
-void mqtt_broker_clidata()
+void mqtt_broker_initiated_nodereset(uint8_t event)
+{
+	doc["sensor"] = "BrokerData";
+	doc["serverConfigs"] = event;
+	doc["NodeIPAddress"] = WiFi.SSID();
+	doc["BrokerName"] = brokername;
+	Serial.println(brokername);
+
+	int b = serializeJson(doc, out);
+	myBroker.publish("ClientsData", out);
+	Serial.println("Data Sent to broker.....");
+}
+
+void mqtt_broker_clidata(uint8_t event)
 {
 	//digitalWrite(BUILTIN_LED, HIGH);     // Initialize the BUILTIN_LED pin as an output
 	doc["sensor"] = "BrokerData";
+	doc["serverConfigs"] = event;
 	doc["NodeIPAddress"] = WiFi.SSID();
 	doc["BrokerName"] = brokername;
-	doc["client0"] = ipaddr[0];
-	doc["client1"] = ipaddr[1];
-	doc["client2"] = ipaddr[2];
-	doc["BrokerName"] = brokername;
-
-	//int b = serializeJson(doc, out);
-	myBroker.publish("RxFromBroker", (String)1);
-	//digitalWrite(BUILTIN_LED, LOW);     // Initialize the BUILTIN_LED pin as an output
+	Serial.println(brokername);
+	doc["Cnumbers"] = clientcount;
+	Serial.println(clientcount);
+#if 0
+	doc["client0"] = timeval[0];
+	Serial.println(timeval[0]);
+	doc["client1"] = timeval[1];
+	Serial.println(timeval[1]);
+	doc["client2"] = timeval[2];
+	Serial.println(timeval[2]);
+#endif
+	int b = serializeJson(doc, out);
+	myBroker.publish("ClientsData", out);
 	Serial.println("Data Sent to broker.....");
-	//mqtt_publish("ClientsData");
-}
-/*JSON buffer End*/
-
-void callback(char* topic, byte* payload, unsigned int length) {
-	Serial.print(topic);
 }
 
 void enable_config()
 {
 	doc["AllConfigs"] = DOOR_ENABLE;//config.SensorBits;
 	//mqtt_publish();
-}
-
-/*
- * WiFi init stuff
- */
-void startWiFiClient()
-{
-	Serial.println("Connecting to "+(String)ssid);
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(ssid, pass);
-
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
-	}
-	Serial.println("");
-
-	Serial.println("WiFi connected");
-	Serial.println("IP address: " + WiFi.localIP().toString());
-}
-
-void startWiFiAP()
-{
-	WiFi.mode(WIFI_AP);
-	WiFi.softAP(ssid, pass);
-	Serial.println("AP started");
-	Serial.println("IP address: " + WiFi.softAPIP().toString());
 }
 
 void ota_config()
@@ -419,21 +459,8 @@ void ota_config()
 	ArduinoOTA.begin();
 }
 
-void nrf_config()
-{
-	if (!nrf24.init()) 
-		Serial.println("init failed");
-
-	if (!nrf24.setChannel(3)) 
-		Serial.println("setChannel failed");
-
-	if (!nrf24.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm))
-		Serial.println("setRF failed");
-}
-
 void scan()
 {
-#if 1
 	String ssid;
 	int32_t rssi;
 	uint8_t encryptionType;
@@ -469,28 +496,6 @@ void scan()
 	} else {
 		Serial.printf(PSTR("WiFi scan error %d"), scanResult);
 	}
-#else
-	// WiFi.scanNetworks will return the number of networks found
-	int n = WiFi.scanNetworks();
-	Serial.println("scan done");
-	if (n == 0) {
-		Serial.println("no networks found");
-	}
-	else {
-		Serial.print(n);
-		Serial.println(" networks found");
-		for (int i = 0; i < n; ++i) {
-			Serial.print(i + 1);
-			Serial.print(": ");
-			Serial.print(WiFi.SSID(i));
-			Serial.print(" (");
-			Serial.print(WiFi.RSSI(i));
-			Serial.print(")");
-			Serial.println();
-			delay(10);
-		}
-	}
-#endif
 }
 
 void wifi_scan_config()
@@ -514,19 +519,6 @@ void wifi_scan_config()
 		ESP.restart();
 	}
 }
-void broker_1_subscribtion()
-{
-	client.subscribe("SensorConfigs");
-	client.subscribe("EnableNodeConfigs");
-	client.subscribe("RxFromBroker");
-}
-
-void broker_1_config()
-{
-	client.setServer("192.168.29.21", 1884);
-	//client.setCallback(callback);
-	broker_1_subscribtion();
-}
 
 void setup()
 {
@@ -539,131 +531,38 @@ void setup()
 	Serial.println("Starting PVs MQTT broker - 1");
 	myBroker.init();
 
-	Serial.println("NRF config Completed");
-
 	myBroker.subscribe("BrokerEvents");
-	myBroker.subscribe("ClientsData");
 	browser_config();
+	mqtt_broker_initiated_nodereset(ARDUINO_BROKER_INIT_RESET_ENABLE);
 }
 
 int counter = 0;
 
-void ExtractEmailNodeData()
-{
-	if(buf[0] & TEMP_ENABLE)
-		ClientData.SensorBits |= ClientData.TempSensorEnable;
-	if(buf[0] & LIGHT_ENABLE)
-		ClientData.SensorBits |= ClientData.LightSensorEnable;
-	if(buf[0] & SPEAKER_ENABLE)
-		ClientData.SensorBits |= ClientData.SpeakerEnable;
-	if(buf[0] & MOVEMENT_ENABLE)
-		ClientData.SensorBits |= ClientData.MovementSensorEnable;
-	if(buf[0] & PHOTOS_ENABLE)
-		ClientData.SensorBits |= ClientData.PhotosEnable;
-	if(buf[0] & NOISE_ENABLE)
-		ClientData.SensorBits |= ClientData.NoiseSensorEnable;
-	if(buf[0] & GAS_ENABLE)
-		ClientData.SensorBits |= ClientData.GasSensorEnable;
-}
-
-void receive_data_from_mesh()
-{
-	uint8_t i = 0;
-	if (nrf24.waitAvailableTimeout(1000)){  
-		if (nrf24.recv(buf, &len)){
-#ifdef DEBUG_LEVEL_1
-			Serial.print("got message: ");
-			Serial.println(len);
-#endif
-			ExtractEmailNodeData();
-			memcpy((uint8_t *)&ClientData, buf, sizeof(struct message));
-#ifdef DEBUG_LEVEL_1
-			debug_prints();
-			send_to_master();
-#endif
-#ifdef DEBUG_LEVEL_1
-			i = 0;
-			while(i<len) {
-				Serial.print(buf[i]);
-				Serial.print(" ");
-				i++;
-			}
-#endif
-			Serial.println();
-		}
-		else
-		{
-			Serial.println("recv failed");
-		}
-
-	}
-	else
-	{
-#ifdef DEBUG_LEVEL_2
-		Serial.println("No message, is nrf24_server running?");
-#endif
-	}
-
-}
-
 void validate_broker_reset()
 {
-	/*	if(broker_reset_check == 0x4)
-		ESP.restart();*/
-}
+	ClientData.DoorClient |= broker_reset_check;
 
-void reconnect() {
-	// Loop until we're reconnected
-	while (!client.connected() && (retry2 > 0)) {
-		retry2--;
-		Serial.print("Attempting 1-MQTT connection...");
-		// Create a random client ID
-		clientId = "ESP8266Client-";
-		clientId += String(random(0xffff), HEX);
-		Serial.print(clientId);
-		// Attempt to connect
-		if (client.connect(clientId.c_str())) {
-			Serial.println("connected");
-			//mqtt_broker_status_1 = 1;
-			client.publish("outTopic", "hello world");
-			broker_1_subscribtion();
-		} else {
-			Serial.print("failed, rc=");
-			Serial.print(client.state());
-			Serial.println(" try again in 5 seconds");
-			// Wait 5 seconds before retrying
-			delay(5000);
-		}
-	}
-
-	if(retry2 == 0)	{
-		Serial.println("Retry count is exceeded");
-		//mqtt_broker_status_1 = 0;
-	}
+	if(ClientData.DoorClient == 0x7)
+		ESP.restart();
 }
 
 void loop()
 {
-#if 0
-	if (!client.connected()) {
-		reconnect();
-	}
-#endif
 	/*
 	 * Publish the counter value as String
 	 */
 	ArduinoOTA.handle();
 
-	if (ClientData.NodeConfigs & ARDUINO_BROKER_RESET_ENABLE)
+	if (ClientData.payload_1 & ARDUINO_BROKER_RESET_ENABLE)
 	{
 		validate_broker_reset();
-		ClientData.NodeConfigs &=~ARDUINO_BROKER_RESET_ENABLE;
+		ClientData.payload_1 &=~ARDUINO_BROKER_RESET_ENABLE;
 	}
 
-	if (ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE)
+	if (ClientData.payload_1 & ARDUINO_BROKER_CLIDATA_ENABLE)
 	{
-		mqtt_broker_clidata();
-		ClientData.NodeConfigs &=~ARDUINO_BROKER_CLIDATA_ENABLE;
+		mqtt_broker_clidata(ARDUINO_BROKER_CLIDATA_ENABLE);
+		ClientData.payload_1 &=~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
 
 }

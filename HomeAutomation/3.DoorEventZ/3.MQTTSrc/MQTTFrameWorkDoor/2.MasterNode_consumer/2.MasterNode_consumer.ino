@@ -300,6 +300,19 @@ void onData(String topic, byte *data, uint32_t length) {
 	}
 	if(ClientData.NodeConfigs & ARDUINO_BROKER_CLIDATA_ENABLE) {
 		Serial.println("Enabled client Data....");
+		const char* sensor1 = doc["NodeIPAddress"];
+		Serial.println(sensor1);
+		sensor1 = doc["BrokerName"];
+		Serial.println(sensor1);
+		uint8_t totClients = doc["Cnumbers"];
+		Serial.println(totClients);
+		const char* addr;
+		addr = doc["client0"];
+		Serial.println(addr);
+		addr = doc["client1"];
+		Serial.println(addr);
+		addr = doc["client2"];
+		Serial.println(addr);
 	}
 }
 
@@ -321,11 +334,13 @@ void Ciritical_Door_event()
 void broker_1_subscribtion()
 {
 	client.subscribe("DoorSensorEvents");
+	client.subscribe("ClientsData");
 }
 
 void broker_2_subscribtion()
 {
 	client2.subscribe("DoorSensorEvents");
+	client2.subscribe("ClientsData");
 }
 
 void reconnect() {
@@ -341,7 +356,7 @@ void reconnect() {
 		if (client.connect(clientId.c_str())) {
 			Serial.println("connected");
 			mqtt_broker_status_1 = 1;
-			client.publish("outTopic", "hello world");
+			client.publish("BCoutTopic", "BrokerConsumer-1");
 			broker_1_subscribtion();
 		} else {
 			Serial.print("failed, rc=");
@@ -481,7 +496,7 @@ void client_connect() {
 		if (client2.connect(clientId2.c_str())) {
 			Serial.println("connected");
 			mqtt_broker_status_2 = 1;
-			client2.publish("outTopic", "hello world");
+			client2.publish("BCoutTopic", "BrokerCLient-2");
 			broker_2_subscribtion();
 		} else {
 			Serial.print("failed, rc=");
@@ -558,51 +573,6 @@ void mqtt_publish(char *pubstr)
 
 	if(mqtt_broker_status_2 == 1)
 		boolean rc2 = client2.publish(pubstr, out);
-}
-
-void mqtt_broker_clidata(uint8_t event)
-{
-	doc["sensor"] = "misc";
-	doc["AllConfigs"] = 0;
-	doc["serverConfigs"] = event;
-	doc["time"] = timeval;
-	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
-	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
-	doc["NodeIPAddress"] = WiFi.SSID();
-	doc["NodeName"] = Nodename;
-
-	doc["Value"] = NodeValue;
-	mqtt_publish("DoorSensorEvents");
-}
-
-void mqtt_broker_reset(uint8_t event)
-{
-	doc["sensor"] = "Door";
-	doc["AllConfigs"] = 0;
-	doc["serverConfigs"] = event;
-	doc["time"] = timeval;
-	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
-	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
-	doc["NodeIPAddress"] = WiFi.SSID();
-	doc["NodeName"] = Nodename;
-
-	doc["Value"] = NodeValue;
-	mqtt_publish("BrokerEvents");
-}
-
-void dooropen_msgsend(uint8_t event)
-{
-	doc["sensor"] = "Door";
-	doc["AllConfigs"] = DOOR_ENABLE;
-	doc["serverConfigs"] = 0;
-	doc["time"] = timeval;
-	doc["MQTTBroker1Status"] = mqtt_broker_status_1;
-	doc["MQTTBroker2Status"] = mqtt_broker_status_2;
-	doc["NodeIPAddress"] = WiFi.SSID();
-	doc["NodeName"] = Nodename;
-
-	doc["Value"] = event;
-	mqtt_publish("DoorSensorEvents");
 }
 
 void temp_sensor_config()
