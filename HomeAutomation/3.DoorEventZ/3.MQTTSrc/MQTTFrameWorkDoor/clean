@@ -1,0 +1,9 @@
+rm -rf 1.DoorClient_M/out/ -rf
+rm -rf 2.MasterNode/out
+rm -rf 3.DoorClient-1_N/out
+rm -rf 4.DoorClient-2-N/out
+rm -rf 2.MasterNode_consumer/out
+rm -rf 3.Nano_temp_Sensor/out
+rm -rf 4.Nano_Display/out
+rm -rf 5.blynk/blynk/out
+rm -rf 1.mail/out

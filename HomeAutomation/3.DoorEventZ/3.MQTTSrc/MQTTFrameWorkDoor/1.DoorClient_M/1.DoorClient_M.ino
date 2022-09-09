@@ -694,6 +694,11 @@ void dev_events_check()
 		mqtt_broker_clidata(ARDUINO_BROKER_CLIDATA_ENABLE);
 		config.payload_1 &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
+	
+	if(mqtt_broker_status_1 == 0 && mqtt_broker_status_1 == 0) {
+			retry = 5;
+			//retry2 = 5;
+	}
 }
 
 void config_events_check()
