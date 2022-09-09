@@ -8,6 +8,7 @@
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
 #include <RH_NRF24.h>
+#include <BlynkSimpleEsp8266.h>
 #define D5 14
 
 /*Command References from mosquitto_pub : 
@@ -20,6 +21,10 @@
  * Gas sensor enable : byte0 = NadeValue, byte1 = 1, ==> string : "Nodevalue12"
  */
 
+#define BLYNK_TEMPLATE_ID "TMPLZoeBRvSy"
+#define BLYNK_DEVICE_NAME "MyHomeAutomation"
+#define BLYNK_AUTH_TOKEN "Pec1K_-BT_WrW4Hkyi_1AINac3XyaHlo"
+
 /* DoorConfigs - 1st byte payload*/
 #define FIRSTEASTDOOR_ENABLE		(1<<0)
 #define FIRSTNORTHDOOR_ENABLE		(1<<1)
@@ -29,7 +34,7 @@
 #define SECONDBEDNORTHDOOR_ENABLE 	(1<<5)
 #define WINDOW1DOOR_ENABLE 		(1<<6)
 #define WINDOWTOPDOOR_ENABLE 		(1<<7)
-
+char auth[] = BLYNK_AUTH_TOKEN;
 /* SensorConfigs - 2nd byte payload*/
 #define DOOR_ENABLE	(1<<0)
 #define TEMP_ENABLE	(1<<1)
@@ -51,7 +56,9 @@
 #define DOOR_EVENT_1_MAIN 0x01
 #define DOOR_EVENT_1_NORTH 0x02
 #define DOOR_EVENT_2_SECOND 0x04
+#define DOOR_EVENT_MASTER 0x08
 
+int ledpin = D4;
 uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
 WiFiUDP ntpUDP;
@@ -545,11 +552,19 @@ void nrf_config()
 		Serial.println("setRF failed");
 }
 
+BlynkTimer timer;
+
+void notifyOnFire()
+{
+	Blynk.logEvent("First-E", "First-E is opened");
+}
+
 void setup() {
 
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
 	pinMode(D5, INPUT_PULLUP);
 	pinMode(12, OUTPUT);
+	pinMode(ledpin,OUTPUT);
 
 	Serial.begin(9600);
 	Serial.println("Publisher: Door Events Node");
@@ -646,13 +661,59 @@ void broker_status_check()
 	}
 }
 
+void process_payload0(byte buf)
+{	
+	Serial.println("proceesing byte 0....");
+	Serial.println(buf);
+	switch(buf) { //coming from blynk
+		case 3:
+		case 5:
+			break;
+		case 8:
+			if (client.connected())
+				client.publish("RxFromBroker", "0012");//ARDUINO_NODE_RESET_ENABLE;
+			if (client2.connected())
+				client2.publish("RxFromBroker", "0012");//ARDUINO_NODE_RESET_ENABLE;
+			break;
+		case 16:
+			if (client.connected())
+				client.publish("RxFromBroker", "0022");//ARDUINO_NODE_RESET_ENABLE;
+			if (client2.connected())
+				client2.publish("RxFromBroker", "0022");//ARDUINO_NODE_RESET_ENABLE;
+			break;
+		case 32:
+			if (client.connected())
+				client.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+			if (client2.connected())
+				client2.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+			break;
+		case 64:
+			if (client.connected())
+				client.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
+			if (client2.connected())
+				client2.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
+			break;
+		case 128:
+			ESP.restart();
+			break;
+		default:
+			break;
+	}
+}
+
 void receive_data_from_mesh()
 {
 	uint8_t i = 0;
+
 	if (nrf24.waitAvailableTimeout(1000)){  
 		if (nrf24.recv(buf, &len)){
-			memcpy((uint8_t *)&ClientData, buf, sizeof(struct message));
-			Serial.println();
+			//memcpy((uint8_t *)&ClientData, buf, len);
+			if(i==0)
+				process_payload0(buf[0]);
+			if(i<len)
+				Serial.println(buf[i++]);
+			else
+				return;
 		}
 		else
 		{
@@ -686,10 +747,7 @@ void dev_events_check()
 	}
 
 	if (ClientData.NodeConfigs & ARDUINO_BROKER_ASSISTANT_RESET_ENABLE)
-	{
-		//validate_broker_reset();
 		ClientData.NodeConfigs &=~ARDUINO_BROKER_ASSISTANT_RESET_ENABLE;
-	}
 
 	receive_data_from_mesh();
 }
@@ -714,5 +772,6 @@ void loop()
 	client.loop();
 	client2.loop();
 
-	delay(1000);
+	//Blynk.run();
+	//timer.run();
 }

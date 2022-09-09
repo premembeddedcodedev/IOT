@@ -43,7 +43,7 @@ clean:
 	rm -rf out
 
 ota:
-	python ./espota.py -i 192.168.29.203 -f ./out/1.DoorClient_M.ino.bin
+	python ./espota.py -i 192.168.29.65 -f ./out/2.MasterNode_consumer.ino.bin
 	rm -rf out
 
 ota_old:

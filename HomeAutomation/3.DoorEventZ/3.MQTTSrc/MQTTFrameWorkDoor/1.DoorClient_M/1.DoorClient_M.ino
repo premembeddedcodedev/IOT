@@ -82,6 +82,8 @@ struct message {
 	uint8_t DoorEnabled;
 	uint8_t doorvalue;
 	uint8_t payload_1;
+	uint8_t payload_2;
+	uint8_t payload_3;
 
 	uint8_t SpeakerEnable;
 	uint8_t TempSensorEnable;
@@ -282,15 +284,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
 	Serial.print("Message arrived [");
 	Serial.print(topic);
 	Serial.print("] ");
+	Serial.print(length);
 	for (int i = 0; i < length; i++) {
 		switch(i) {
-			case 0:
+			case 0: // Sensor configs
 				config.payload_0 = (uint8_t)(payload[0] - '0');
 				Serial.println(config.payload_0);
 				break;
-			case 1:
+			case 1: // Node configs
 				config.payload_1 = (uint8_t)(payload[1] - '0');
 				Serial.println(config.payload_1);
+				break;
+			case 2: // Door value
+				config.payload_2 = (uint8_t)(payload[2] - '0');
+				config.doorvalue = config.payload_2 & 0x7; 
+				Serial.println(config.payload_2);
+				break;
+			case 3: // Reset configs
+				config.payload_3 = (uint8_t)(payload[3] - '0');
+				Serial.println(config.payload_3);
 				break;
 			default:
 				break;
@@ -517,6 +529,8 @@ void setup() {
 
 	config.payload_0 = 0;
 	config.payload_1 = 0;
+	config.payload_2 = 0;
+	config.payload_3 = 0;
 
 	timeClient.begin();
 
@@ -668,11 +682,12 @@ void dev_events_check()
 	}
 #endif
 	/* Door Sensor fullnode restart */
-	if (config.payload_1 & ARDUINO_NODE_RESET_ENABLE) {
-		//if(config.doorvalue & NodeValue) {
+	if ((config.payload_3 & ARDUINO_NODE_RESET_ENABLE) || (config.payload_1 & ARDUINO_NODE_RESET_ENABLE)) {
+		if(config.doorvalue & NodeValue) {
 			ESP.restart();
 			config.payload_1 &= ~ARDUINO_NODE_RESET_ENABLE;
-		//}
+			config.payload_3 &= ~ARDUINO_NODE_RESET_ENABLE;
+		}
 	}
 
 	if (config.payload_1 & ARDUINO_BROKER_CLIDATA_ENABLE) {
@@ -683,12 +698,12 @@ void dev_events_check()
 
 void config_events_check()
 {
-	if (config.payload_0 & TEMP_ENABLE) {
+/*	if (config.payload_0 & TEMP_ENABLE) {
 		if(config.doorvalue & NodeValue) {
 			temp_sensor_config();
 			config.payload_0 &= ~TEMP_ENABLE;
 		}
-	}
+	}*/
 }
 
 void loop()
