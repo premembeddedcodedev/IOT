@@ -682,16 +682,12 @@ void process_payload0(byte buf)
 				client2.publish("RxFromBroker", "0022");//ARDUINO_NODE_RESET_ENABLE;
 			break;
 		case 32:
-			if (client.connected())
-				client.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
-			if (client2.connected())
-				client2.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+			client.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+			client2.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
 			break;
 		case 64:
-			if (client.connected())
-				client.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
-			if (client2.connected())
-				client2.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
+			client.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
+			client2.publish("BrokerReset", "1");//ARDUINO_NODE_RESET_ENABLE;
 			break;
 		case 128:
 			ESP.restart();
@@ -752,6 +748,32 @@ void dev_events_check()
 	receive_data_from_mesh();
 }
 
+void reconnect_dup() {
+	if(!client.connected()) {
+		clientId = "ESP8266Client-";
+		clientId += String(random(0xffff), HEX);
+		Serial.print(clientId);
+		if (client.connect(clientId.c_str())) {
+			Serial.println("connected");
+			mqtt_broker_status_1 = 1;
+			client.publish("outTopic", "hello world");
+			broker_1_subscribtion();
+		}
+	}
+	if(!client2.connected()) {
+		clientId2 = "ESP8266Client-";
+		clientId2 += String(random(0xffff), HEX);
+		Serial.print(clientId2);
+		if (client2.connect(clientId2.c_str())) {
+			Serial.println("connected");
+			mqtt_broker_status_2 = 1;
+			client2.publish("outTopic", "hello world");
+			broker_2_subscribtion();
+		}
+	}
+
+}
+
 void loop()
 {
 	if ( WiFi.status() != WL_CONNECTED ) {
@@ -762,6 +784,8 @@ void loop()
 	MDNS.update();
 
 	broker_status_check();
+
+	reconnect_dup();
 
 	ArduinoOTA.handle();
 

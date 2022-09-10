@@ -42,6 +42,9 @@ flash:
 clean:
 	rm -rf out
 
+usb_ota:
+	esptool --chip auto --port /dev/ttyUSB0 --baud 115200 write_flash 0x00000 ./out/1.DoorClient_M.ino.bin
+
 ota:
 	python ./espota.py -i 192.168.29.119 -f ./out/2.MasterNode.ino.bin
 	rm -rf out

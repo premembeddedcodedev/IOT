@@ -672,6 +672,32 @@ void broker_status_check()
 	}
 }
 
+void reconnect_dup() {
+	if(!client.connected()) {
+		clientId = "ESP8266Client-";
+		clientId += String(random(0xffff), HEX);
+		Serial.print(clientId);
+		if (client.connect(clientId.c_str())) {
+			Serial.println("connected");
+			mqtt_broker_status_1 = 1;
+			client.publish("outTopic", "hello world");
+			broker_1_subscribtion();
+		}
+	}
+	if(!client2.connected()) {
+		clientId2 = "ESP8266Client-";
+		clientId2 += String(random(0xffff), HEX);
+		Serial.print(clientId2);
+		if (client2.connect(clientId2.c_str())) {
+			Serial.println("connected");
+			mqtt_broker_status_2 = 1;
+			client2.publish("outTopic", "hello world");
+			broker_2_subscribtion();
+		}
+	}
+
+}
+
 void dev_events_check()
 {
 	if (digitalRead(D5) == 1) {
@@ -707,9 +733,8 @@ void dev_events_check()
 		config.payload_1 &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
 	
-	if(mqtt_broker_status_1 == 0 && mqtt_broker_status_1 == 0) {
-			//retry = 5;
-			//retry2 = 5;
+	if(mqtt_broker_status_2 == 0 && mqtt_broker_status_1 == 0) {
+		reconnect_dup();
 	}
 }
 
