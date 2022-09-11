@@ -289,6 +289,19 @@ class myMQTTBroker: public uMQTTBroker
                                 String client_id;
 
                                 getClientAddr(i, addr);
+				Serial.println("count");
+				Serial.println(getClientCount());
+				if(i==0)
+					cameraip = "Client "+client_id+" on addr: "+ addr.toString().c_str();
+				if(i==1)
+					cameraip2 = addr.toString().c_str();
+				if(i==2)
+					cameraip3 = addr.toString().c_str();
+				if(i==3)
+					cameraip4 = addr.toString().c_str();
+				if(i==4)
+					cameraip5 = addr.toString().c_str();
+
                                 getClientId(i, client_id);
                                 Serial.println("Client "+client_id+" on addr: "+addr.toString());
                         }
@@ -515,10 +528,12 @@ void loop()
 		doorevent  = 1;
 		doorevent_e  = 2;
 		doorevent_s  = 3;
-		cameraip = "192.168.10.1";
+		
+		myBroker.printClients();
+		/*cameraip = "192.168.10.1";
 		cameraip2 = "192.168.10.2";
 		cameraip3 = "192.168.10.3";
 		cameraip4 = "192.168.10.4";
-		cameraip5 = "192.168.10.5";
+		cameraip5 = "192.168.10.5";*/
 	}
 }
