@@ -253,113 +253,113 @@ void notFound(AsyncWebServerRequest *request) {
  */
 class myMQTTBroker: public uMQTTBroker
 {
-        public:
-                virtual bool onConnect(IPAddress addr, uint16_t client_count) {
-                        Serial.println(addr.toString()+" connected");
-                        return true;
-                }
+	public:
+		virtual bool onConnect(IPAddress addr, uint16_t client_count) {
+			Serial.println(addr.toString()+" connected");
+			return true;
+		}
 
-                virtual void onDisconnect(IPAddress addr, String client_id) {
-                        Serial.println(addr.toString()+" ("+client_id+") disconnected");
-                }
+		virtual void onDisconnect(IPAddress addr, String client_id) {
+			Serial.println(addr.toString()+" ("+client_id+") disconnected");
+		}
 
-                virtual bool onAuth(String username, String password, String client_id) {
-                        Serial.println("Username/Password/ClientId: "+username+"/"+password+"/"+client_id);
-                        return true;
-                }
+		virtual bool onAuth(String username, String password, String client_id) {
+			Serial.println("Username/Password/ClientId: "+username+"/"+password+"/"+client_id);
+			return true;
+		}
 
-                virtual void onData(String topic, const char *data, uint32_t length) {
-                        char data_str[length+1];
-                        os_memcpy(data_str, data, length);
-                        data_str[length] = '\0';
+		virtual void onData(String topic, const char *data, uint32_t length) {
+			char data_str[length+1];
+			os_memcpy(data_str, data, length);
+			data_str[length] = '\0';
 
-                        Serial.println("received topic '"+topic+"' with data '"+(String)data_str+"'");
-                        Serial.println((uint8_t)data_str[0]);
-                        if((uint8_t)data_str[0] == 1)
-                                ESP.restart();
+			Serial.println("received topic '"+topic+"' with data '"+(String)data_str+"'");
+			Serial.println((uint8_t)data_str[0]);
+			if((uint8_t)data_str[0] == 1)
+				ESP.restart();
 
-                        //printClients();
-                }
+			//printClients();
+		}
 
-                // Sample for the usage of the client info methods
+		// Sample for the usage of the client info methods
 
-                virtual void printClients() {
-                        for (int i = 0; i < getClientCount(); i++) {
-                                IPAddress addr;
-                                String client_id;
+		virtual void printClients() {
+			for (int i = 0; i < getClientCount(); i++) {
+				IPAddress addr;
+				String client_id;
 
-                                getClientAddr(i, addr);
+				getClientAddr(i, addr);
 				Serial.println("count");
 				Serial.println(getClientCount());
 				if(i==0)
 					cameraip = "Client "+client_id+" on addr: "+ addr.toString().c_str();
 				if(i==1)
-					cameraip2 = addr.toString().c_str();
+					cameraip2 = "Client "+client_id+" on addr: "+ addr.toString().c_str();
 				if(i==2)
-					cameraip3 = addr.toString().c_str();
+					cameraip3 = "Client "+client_id+" on addr: "+ addr.toString().c_str();
 				if(i==3)
-					cameraip4 = addr.toString().c_str();
+					cameraip4 = "Client "+client_id+" on addr: "+ addr.toString().c_str();
 				if(i==4)
-					cameraip5 = addr.toString().c_str();
+					cameraip5 = "Client "+client_id+" on addr: "+ addr.toString().c_str();
 
-                                getClientId(i, client_id);
-                                Serial.println("Client "+client_id+" on addr: "+addr.toString());
-                        }
-                }
+				getClientId(i, client_id);
+				Serial.println("Client "+client_id+" on addr: "+addr.toString());
+			}
+		}
 };
 
 myMQTTBroker myBroker;
 
 void startWiFiClient()
 {
-        Serial.println("Connecting to "+(String)ssid);
-        WiFi.mode(WIFI_STA);
-        WiFi.begin(ssid, pass);
+	Serial.println("Connecting to "+(String)ssid);
+	WiFi.mode(WIFI_STA);
+	WiFi.begin(ssid, pass);
 
-        while (WiFi.status() != WL_CONNECTED) {
-                delay(500);
-                Serial.print(".");
-        }
-        Serial.println("");
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
+	Serial.println("");
 
-        Serial.println("WiFi connected");
-        Serial.println("IP address: " + WiFi.localIP().toString());
+	Serial.println("WiFi connected");
+	Serial.println("IP address: " + WiFi.localIP().toString());
 }
 
 void startWiFiAP()
 {
-        WiFi.mode(WIFI_AP);
-        WiFi.softAP(ssid, pass);
-        Serial.println("AP started");
-        Serial.println("IP address: " + WiFi.softAPIP().toString());
+	WiFi.mode(WIFI_AP);
+	WiFi.softAP(ssid, pass);
+	Serial.println("AP started");
+	Serial.println("IP address: " + WiFi.softAPIP().toString());
 }
 
 void ota_config()
 {
-        while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-                Serial.println("Connection Failed! Rebooting...");
-                delay(5000);
-                ESP.restart();
-        }
+	while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+		Serial.println("Connection Failed! Rebooting...");
+		delay(5000);
+		ESP.restart();
+	}
 
-        ArduinoOTA.onStart([]() {
-                        Serial.println("Start");
-                        });
-        ArduinoOTA.onEnd([]() {
-                        Serial.println("\nEnd");
-                        });
-        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-                        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-                        });
-        ArduinoOTA.onError([](ota_error_t error) {
-                        Serial.printf("Error[%u]: ", error);
-                        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-                        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-                        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-                        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-                        else if (error == OTA_END_ERROR) Serial.println("End Failed");
-                        });
-        ArduinoOTA.begin();
+	ArduinoOTA.onStart([]() {
+			Serial.println("Start");
+			});
+	ArduinoOTA.onEnd([]() {
+			Serial.println("\nEnd");
+			});
+	ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+			Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+			});
+	ArduinoOTA.onError([](ota_error_t error) {
+			Serial.printf("Error[%u]: ", error);
+			if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+			else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+			else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+			else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+			else if (error == OTA_END_ERROR) Serial.println("End Failed");
+			});
+	ArduinoOTA.begin();
 }
 
 // Replaces placeholder with DHT values
@@ -398,30 +398,29 @@ String processor(const String& var)
 	return String();
 }
 
+uint8_t reset;
+
 void setup()
 {
 	// Serial port for debugging purposes
 	Serial.begin(9600);
 
-        // Start WiFi
-        if (WiFiAP)
-                startWiFiAP();
-        else
-                startWiFiClient();
+	// Start WiFi
+	if (WiFiAP)
+		startWiFiAP();
+	else
+		startWiFiClient();
 
-        // Start the broker
-        Serial.println("Starting MQTT broker");
-        myBroker.init();
+	// Start the broker
+	Serial.println("Starting MQTT broker");
+	myBroker.init();
 
-        ota_config();
+	ota_config();
 
-        /*
-         * Subscribe to anything
-         */
-        myBroker.subscribe("BrokerReset");
-        myBroker.publish("RxFromBroker", "0012");//ARDUINO_NODE_RESET_ENABLE;
-        myBroker.publish("RxFromBroker", "0022");//ARDUINO_NODE_RESET_ENABLE;
-        myBroker.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+	/*
+	 * Subscribe to anything
+	 */
+	myBroker.subscribe("BrokerReset");
 
 	// Print ESP8266 Local IP Address
 	Serial.println(WiFi.localIP());
@@ -494,6 +493,9 @@ void setup()
 			inputParam = "none";
 			}
 			Serial.println(inputMessage);
+			reset = inputMessage.toInt();;
+			Serial.print("Reset Received : ");
+			Serial.println(reset);
 			request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" 
 					+ inputParam + ") with value: " + inputMessage +
 					"<br><a href=\"/\">Return to Home Page</a>");
@@ -504,7 +506,7 @@ void setup()
 
 void loop()
 {
-        ArduinoOTA.handle();
+	ArduinoOTA.handle();
 	unsigned long currentMillis = millis();
 	if (currentMillis - previousMillis >= interval) {
 		previousMillis = currentMillis;
@@ -528,12 +530,31 @@ void loop()
 		doorevent  = 1;
 		doorevent_e  = 2;
 		doorevent_s  = 3;
-		
+
+		cameraip = "No IPAddr";
+		cameraip2 = "No IPAddr";
+		cameraip3 = "No IPAddr";
+		cameraip4 = "No IPAddr";
+		cameraip5 =  "No IPAddr";
+
 		myBroker.printClients();
+
+		if(reset == 1) {
+			reset = 0;
+			ESP.restart();
+		}
+
+		if(reset == 2) {
+			myBroker.publish("RxFromBroker", "0012");//ARDUINO_NODE_RESET_ENABLE;
+			myBroker.publish("RxFromBroker", "0022");//ARDUINO_NODE_RESET_ENABLE;
+			myBroker.publish("RxFromBroker", "0042");//ARDUINO_NODE_RESET_ENABLE;
+			reset = 0;
+		}
+
 		/*cameraip = "192.168.10.1";
-		cameraip2 = "192.168.10.2";
-		cameraip3 = "192.168.10.3";
-		cameraip4 = "192.168.10.4";
-		cameraip5 = "192.168.10.5";*/
+		  cameraip2 = "192.168.10.2";
+		  cameraip3 = "192.168.10.3";
+		  cameraip4 = "192.168.10.4";
+		  cameraip5 = "192.168.10.5";*/
 	}
 }
