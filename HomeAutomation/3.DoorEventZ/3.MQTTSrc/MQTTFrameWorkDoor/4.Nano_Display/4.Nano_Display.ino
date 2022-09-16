@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Fonts/FreeSerif9pt7b.h>
 //#include <Adafruit_Sensor.h>
 //#include <Adafruit_BME280.h>
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -99,6 +100,7 @@ void display_config()
 		for(;;); // Don't proceed, loop forever
 	}
 
+	display.setFont(&FreeSerif9pt7b);
 	// Clear the buffer
 	display.clearDisplay();
 	display.display();
@@ -124,9 +126,10 @@ void loop() {
 	display.clearDisplay();
 	if(check_event == 1) {
 		if(data[0] >= 1) {
-			display.setCursor(0,0);
+			//display.setCursor(0,0);
+			display.setCursor(0, 35);
 			display.setTextSize(1);
-			display.setTextColor(SSD1306_WHITE);
+			//display.setTextColor(SSD1306_WHITE);
 			display.print("DoorStatus: ");
 			display.println(data[0]);
 			display.display();
@@ -134,25 +137,29 @@ void loop() {
 		}
 		check_event = 0;
 	} else {
-		display.setCursor(0,0);
+		display.setCursor(0,20);
 		display.setTextSize(1);
-		display.setTextColor(SSD1306_WHITE);
+		//display.setTextColor(SSD1306_WHITE);
 		//display.println("Message Received....!");
-		display.print("messageID = ");
-		display.println(messageID);
-		display.print("DoorClient: ");
-		display.println(ClientData.DoorClient);
-		display.print("DoorStatus: ");
-		display.println(ClientData.DoorStatus);
-		display.print("SpeakerStatus: ");
-		display.println(ClientData.SpeakerStatus);
-		display.print("Temparature: ");
+		//display.print("messageID = ");
+		//display.println(messageID);
+		//display.print("DoorClient: ");
+		//display.println(ClientData.DoorClient);
+		//display.print("DoorStatus: ");
+		//display.println(ClientData.DoorStatus);
+		//display.print("SpeakerStatus: ");
+		//display.println(ClientData.SpeakerStatus);
+		display.print("Temp: ");
+		display.setTextSize(1);
 		display.println(ClientData.TemparatureF);
-		display.print("Pressure: ");
-		display.println(ClientData.PressureF);
-		display.print("Altitude: ");
-		display.println(ClientData.AltitudeF);
-		display.print("Humidity: ");
+		//display.print("Pressure: ");
+		//display.println(ClientData.PressureF);
+		//display.print("Altitude: ");
+		//display.println(ClientData.AltitudeF);
+		display.setTextSize(1);
+		display.setCursor(0, 45);
+		display.print("Humid: ");
+		display.setTextSize(1);
 		display.println(ClientData.HumidityF);
 		display.display();
 		messageID++;
