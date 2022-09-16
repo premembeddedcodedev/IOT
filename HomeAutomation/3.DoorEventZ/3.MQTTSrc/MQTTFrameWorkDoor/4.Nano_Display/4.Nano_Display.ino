@@ -107,8 +107,9 @@ void display_config()
 
 	testdrawstyles();    // Draw 'stylized' characters
 }
-
+int led_pin=2;
 void setup() {
+	pinMode(led_pin,OUTPUT);
 	Serial.begin(9600);
 	Wire.begin(8); 
 	while(!Serial);    // time to get serial running
@@ -126,6 +127,7 @@ void loop() {
 	display.clearDisplay();
 	if(check_event == 1) {
 		if(data[0] >= 1) {
+			digitalWrite(led_pin,HIGH);
 			//display.setCursor(0,0);
 			display.setCursor(0, 35);
 			display.setTextSize(1);
@@ -137,6 +139,7 @@ void loop() {
 		}
 		check_event = 0;
 	} else {
+		digitalWrite(led_pin,LOW);
 		display.setCursor(0,20);
 		display.setTextSize(1);
 		//display.setTextColor(SSD1306_WHITE);
