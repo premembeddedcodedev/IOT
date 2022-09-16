@@ -145,20 +145,52 @@ String style =
 ".btn{background:#3498db;color:#fff;cursor:pointer}</style>";
 
 /* Login page */
-String loginIndex =
-"<form name=loginForm>"
-"<h1>ESP32 Login</h1>"
-"<input name=userid placeholder='User ID'> "
-"<input name=pwd placeholder=Password type=Password> "
-"<input type=submit onclick=check(this.form) class=btn value=Login></form>"
+/*
+ * Login page
+ */
+
+const char* loginIndex =
+"<form name='loginForm'>"
+"<table width='20%' bgcolor='A09F9F' align='center'>"
+"<tr>"
+"<td colspan=2>"
+"<center><font size=4><b>ESP32 Login Page</b></font></center>"
+"<br>"
+"</td>"
+"<br>"
+"<br>"
+"</tr>"
+"<tr>"
+"<td>Username:</td>"
+"<td><input type='text' size=25 name='userid'><br></td>"
+"</tr>"
+"<br>"
+"<br>"
+"<tr>"
+"<td>Password:</td>"
+"<td><input type='Password' size=25 name='pwd'><br></td>"
+"<br>"
+"<br>"
+"</tr>"
+"<tr>"
+"<td><input type='submit' onclick='check(this.form)' value='Login'></td>"
+"</tr>"
+"</table>"
+"</form>"
 "<script>"
-"function check(form) {"
+"function check(form)"
+"{"
 "if(form.userid.value=='admin' && form.pwd.value=='admin')"
-"{window.open('/serverIndex')}"
-"else"
-"{alert('Error Password or Username')}"
+"{"
+"window.open('/serverIndex')"
 "}"
-"</script>" + style;
+"else"
+"{"
+" alert('Error Password or Username')/*displays error message*/"
+"}"
+"}"
+"</script>";
+
 
 /* Server Index Page */
 String serverIndex =
