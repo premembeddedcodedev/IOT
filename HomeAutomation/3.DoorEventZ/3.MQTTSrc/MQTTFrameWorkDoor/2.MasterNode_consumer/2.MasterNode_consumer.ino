@@ -328,7 +328,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 	Serial.print("Message arrived [");
 	Serial.print(topic);
 	Serial.print("] ");
-	onData(topic, payload, length);
+	if(strcmp(topic, "RxFromBroker") == 0) {
+		Serial.print("Am in All Rx Payload : ");
+		Serial.println((uint8_t)payload[3]);
+		Serial.println(payload[3]);
+		if((uint8_t)(payload[3] - '0') == 2)
+			ESP.restart();
+	} else
+		onData(topic, payload, length);
 
 }
 void Ciritical_Door_event()
@@ -342,12 +349,14 @@ void broker_1_subscribtion()
 {
 	client.subscribe("DoorSensorEvents");
 	client.subscribe("ClientsData");
+	client.subscribe("RxFromBroker");
 }
 
 void broker_2_subscribtion()
 {
 	client2.subscribe("DoorSensorEvents");
 	client2.subscribe("ClientsData");
+	client.subscribe("RxFromBroker");
 }
 
 void reconnect() {
@@ -567,7 +576,7 @@ void setup() {
 	pinMode(ledpin,OUTPUT);
 
 	Serial.begin(9600);
-	Serial.println("Publisher: Door Events Node");
+	Serial.println("Publisher: All Rx Door Events Node");
 
 	nrf_config();
 
@@ -785,7 +794,7 @@ void loop()
 
 	broker_status_check();
 
-	reconnect_dup();
+	//reconnect_dup();
 
 	ArduinoOTA.handle();
 
