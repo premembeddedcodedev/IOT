@@ -62,7 +62,7 @@ StaticJsonDocument<512> doc;
 uint8_t NodeValue = DOOR_EVENT_1_NORTH;
 const long utcOffsetInSeconds = 3600;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-const char* passwd = "prem@123";
+const char* passwd = "";
 uint8_t retry = 5;
 uint8_t retry2 = 5;
 String clientId;

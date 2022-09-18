@@ -19,7 +19,7 @@ const char* PARAM_INPUT_2 = "input2";
 const char* PARAM_INPUT_3 = "input3";
 
 char ssid[] = "SHSIAAP2";     
-char pass[] = "prem@123"; 
+char pass[] = ""; 
 
 uint8_t doorevent;
 uint8_t doorevent_e;

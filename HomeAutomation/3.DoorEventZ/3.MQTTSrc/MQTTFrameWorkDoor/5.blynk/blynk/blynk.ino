@@ -12,7 +12,7 @@ BlynkTimer timer;
 
 char auth[] = BLYNK_AUTH_TOKEN;
 char ssid[] = "SHSIAAP2";  // Enter your Wifi Username
-char pass[] = "prem@123";  // Enter your Wifi password
+char pass[] = "";  // Enter your Wifi password
 
 int ledpin = D4;
 

@@ -19,7 +19,7 @@ BlynkTimer timer;
 char auth[] = BLYNK_AUTH_TOKEN;
 RH_NRF24 nrf24(2, 4); // use this for NodeMCU Amica/AdaFruit Huzzah ESP8266 Feather
 char ssid[] = "TP-Link_F524";  // Enter your Wifi Username
-char pass[] = "prem@123";  // Enter your Wifi password
+char pass[] = "";  // Enter your Wifi password
 
 int ledpin = D4;
 int v0_value = 0;
