@@ -1,47 +1,34 @@
-// Import required libraries
-#include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <Hash.h>
-#include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
 #include "uMQTTBroker.h"
 #include <ArduinoOTA.h>
 
-//extern std::string ipadd1 = "";
-bool WiFiAP = false;      // Do yo want the ESP as AP?
+bool WiFiAP = false;      
 
 String cameraip = "";
 String cameraip2 = "";
 String cameraip3 = "";
 String cameraip4 = "";
 String cameraip5 = "";
+
+float t = 0.0;
+float h = 0.0;
+
 const char* PARAM_INPUT_1 = "input1";
 const char* PARAM_INPUT_2 = "input2";
 const char* PARAM_INPUT_3 = "input3";
-// Replace with your network credentials
-char ssid[] = "SHSIAAP2";     // your network SSID (name)
-char pass[] = "prem@123"; // your network password
 
-// current temperature & humidity, updated in loop()
-float t = 0.0;
-float h = 0.0;
+char ssid[] = "SHSIAAP2";     
+char pass[] = "prem@123"; 
 
 uint8_t doorevent;
 uint8_t doorevent_e;
 uint8_t doorevent_s;
 
-// Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-
-// Generally, you should use "unsigned long" for variables that hold time
-// The value will quickly become too large for an int to store
-unsigned long previousMillis = 0;    // will store last time DHT was updated
-
-// Updates DHT readings every 10 seconds
+unsigned long previousMillis = 0;   
 const long interval = 10000;  
-//  <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="Prem's Home Automation">
+
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -248,9 +235,6 @@ void notFound(AsyncWebServerRequest *request) {
 	request->send(404, "text/plain", "Not found");
 }
 
-/*
- * Custom broker class with overwritten callback functions
- */
 class myMQTTBroker: public uMQTTBroker
 {
 	public:
@@ -362,7 +346,6 @@ void ota_config()
 	ArduinoOTA.begin();
 }
 
-// Replaces placeholder with DHT values
 String processor(const String& var)
 {
 	if(var == "TEMPERATURE"){
@@ -402,30 +385,18 @@ uint8_t reset;
 
 void setup()
 {
-	// Serial port for debugging purposes
 	Serial.begin(9600);
 
-	// Start WiFi
 	if (WiFiAP)
 		startWiFiAP();
 	else
 		startWiFiClient();
 
-	// Start the broker
 	Serial.println("Starting MQTT broker");
 	myBroker.init();
-
 	ota_config();
-
-	/*
-	 * Subscribe to anything
-	 */
 	myBroker.subscribe("BrokerReset");
 
-	// Print ESP8266 Local IP Address
-	Serial.println(WiFi.localIP());
-	cameraip = WiFi.localIP().toString().c_str();
-	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
 			request->send_P(200, "text/html", index_html, processor);
 			});
@@ -469,21 +440,17 @@ void setup()
 			request->send_P(200, "text/html", index_html);
 			});
 
-	// Send a GET request to <ESP_IP>/get?input1=<inputMessage>
 	server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
 			String inputMessage;
 			String inputParam;
-			// GET input1 value on <ESP_IP>/get?input1=<inputMessage>
 			if (request->hasParam(PARAM_INPUT_1)) {
 			inputMessage = request->getParam(PARAM_INPUT_1)->value();
 			inputParam = PARAM_INPUT_1;
 			}
-			// GET input2 value on <ESP_IP>/get?input2=<inputMessage>
 			else if (request->hasParam(PARAM_INPUT_2)) {
 			inputMessage = request->getParam(PARAM_INPUT_2)->value();
 			inputParam = PARAM_INPUT_2;
 			}
-			// GET input3 value on <ESP_IP>/get?input3=<inputMessage>
 			else if (request->hasParam(PARAM_INPUT_3)) {
 			inputMessage = request->getParam(PARAM_INPUT_3)->value();
 			inputParam = PARAM_INPUT_3;

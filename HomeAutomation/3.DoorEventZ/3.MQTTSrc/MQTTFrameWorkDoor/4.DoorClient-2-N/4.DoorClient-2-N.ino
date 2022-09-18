@@ -7,6 +7,7 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
+#include <espnow.h>
 #include "DHT.h"
 #define D5 14
 #define DHTPIN 2
@@ -55,7 +56,7 @@
 #define DOOR_EVENT_1_MAIN	0x01
 #define DOOR_EVENT_1_NORTH	0x02
 #define DOOR_EVENT_2_SECOND	0x04
-//BlynkTimer timer;
+
 WiFiUDP ntpUDP;
 char out[256];
 char timeval[32] = {};
@@ -76,10 +77,6 @@ uint8_t mqtt_broker_status_2;
 DHT dht(DHTPIN, DHTTYPE);
 NTPClient timeClient(ntpUDP, "in.pool.ntp.org", utcOffsetInSeconds);
 
-/* publish : BrokerEvents, DoorSensorEvents
- * subscribe: SensorConfigs, EnableNodeConfigs
- */
-
 struct message {
 	uint8_t payload_0;
 	uint8_t DoorEnabled;
@@ -96,12 +93,6 @@ struct message {
 	uint8_t NoiseSensorEnable;
 	uint8_t GasSensorEnable;
 	uint8_t AirQualitySensorEnable;
-
-	/*	float h;
-		float t;
-		float f;
-		float hif;
-		float hic;*/
 };
 
 struct message config;
@@ -545,10 +536,6 @@ void broker_2_config()
 	broker_2_subscribtion();
 }
 
-void notifyOnDoorOpen()
-{
-}
-
 void setup() {
 
 	pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
@@ -575,7 +562,6 @@ void setup() {
 	broker_1_config();
 	broker_2_config();	
 	browser_config();
-	//timer.setInterval(1000L,notifyOnFire);
 }
 
 void mqtt_publish(char *pubstr)
@@ -763,10 +749,10 @@ void dev_events_check()
 		mqtt_broker_clidata(ARDUINO_BROKER_CLIDATA_ENABLE);
 		config.payload_1 &= ~ARDUINO_BROKER_CLIDATA_ENABLE;
 	}
-	
-	if(mqtt_broker_status_2 == 0 && mqtt_broker_status_1 == 0) {
-		reconnect_dup();
-	}
+
+//	if(mqtt_broker_status_2 == 0 && mqtt_broker_status_1 == 0)
+		//reconnect_dup();
+
 }
 
 void config_events_check()
