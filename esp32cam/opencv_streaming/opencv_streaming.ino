@@ -3,6 +3,9 @@
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#include <WiFiMulti.h>
+
+WiFiMulti wifiMulti;
 
 const char* WIFI_SSID = "SHSIAAP2";
 const char* WIFI_PASS = "prem@123";
@@ -143,6 +146,54 @@ const char* serverIndex =
 "});"
 "</script>";
 
+const char* passwd = "prem@123";
+
+void scan()
+{
+	// WiFi.scanNetworks will return the number of networks found
+	int n = WiFi.scanNetworks();
+	Serial.println("scan done");
+	if (n == 0) {
+		Serial.println("no networks found");
+	}
+	else {
+		Serial.print(n);
+		Serial.println(" networks found");
+		for (int i = 0; i < n; ++i) {
+			Serial.print(i + 1);
+			Serial.print(": ");
+			Serial.print(WiFi.SSID(i));
+			Serial.print(" (");
+			Serial.print(WiFi.RSSI(i));
+			Serial.print(")");
+			Serial.println();
+			delay(10);
+		}
+	}
+}
+
+void wifi_scan_config()
+{
+	WiFi.disconnect();
+	//scan();
+	WiFi.persistent(false);
+	wifiMulti.addAP("SHSIAAP2", passwd);
+	wifiMulti.addAP("JioFiber5G", passwd);
+	wifiMulti.addAP("JioFiber4g", passwd);
+	wifiMulti.addAP("TP-Link_F524", passwd);
+	wifiMulti.addAP("TP-Link_F524_5G", passwd);
+
+	if (wifiMulti.run() == WL_CONNECTED) {
+		Serial.print("WiFi connected: ");
+		Serial.print(WiFi.SSID());
+		Serial.print(" ");
+		Serial.println(WiFi.localIP());
+	} else {
+		Serial.println("WiFi not connected!");
+		ESP.restart();
+	}
+}
+
 void  setup(){
 	Serial.begin(115200);
 	Serial.println("Hellow praveen...");
@@ -157,12 +208,18 @@ void  setup(){
 		bool ok = Camera.begin(cfg);
 		Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
 	}
+
+	wifi_scan_config();
+
+/*
+
 	WiFi.persistent(false);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(WIFI_SSID, WIFI_PASS);
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
 	}
+*/
 	Serial.print("http://");
 	Serial.println(WiFi.localIP());
 	Serial.println("  /cam-lo.jpg");
@@ -221,6 +278,11 @@ void  setup(){
 
 void loop()
 {
+    if(wifiMulti.run() != WL_CONNECTED) {
+        Serial.println("WiFi not connected!");
+        delay(1000);
+    }
+#if 0
 	unsigned long currentMillis = millis();
 	if((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval)) {
 		Serial.println(millis());
@@ -229,5 +291,8 @@ void loop()
 		previousMillis = currentMillis;
 		delay(10000);
 	}
+#endif
+
+
 	server.handleClient();
 }

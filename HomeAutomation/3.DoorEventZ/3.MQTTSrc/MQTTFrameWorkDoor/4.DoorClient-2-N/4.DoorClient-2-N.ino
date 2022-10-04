@@ -7,7 +7,6 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <ESP8266WiFiMulti.h>
-#include <espnow.h>
 #include "DHT.h"
 #define D5 14
 #define DHTPIN 2
@@ -32,9 +31,6 @@
 #define SECONDBEDNORTHDOOR_ENABLE 	(1<<5)
 #define WINDOW1DOOR_ENABLE 		(1<<6)
 #define WINDOWTOPDOOR_ENABLE 		(1<<7)
-
-#define BLYNK_TEMPLATE_ID "TMPLZoeBRvSy"
-#define BLYNK_DEVICE_NAME "Quickstart Template"
 
 /* SensorConfigs - 2nd byte payload*/
 #define DOOR_ENABLE	(1<<0)
@@ -66,7 +62,7 @@ StaticJsonDocument<512> doc;
 uint8_t NodeValue = DOOR_EVENT_2_SECOND;
 const long utcOffsetInSeconds = 3600;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-const char* passwd = "";
+const char* passwd = "prem@123";
 uint8_t retry = 5;
 uint8_t retry2 = 5;
 String clientId;
@@ -176,7 +172,7 @@ const char* loginIndex =
 "{"
 "if(form.userid.value=='admin' && form.pwd.value=='admin')"
 "{"
-"window.open('/serverIndex')"
+"window.open('/index_html')"
 "}"
 "else"
 "{"
@@ -231,10 +227,118 @@ String serverIndex =
 "</script>" + style;
 /* Web Server config -- end*/
 
+uint8_t LED1pin = D7;
+bool LED1status = LOW;
+
+uint8_t LED2pin = D6;
+bool LED2status = LOW;
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html> <html>
+<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">
+<title>LED Control</title>
+<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}
+body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}
+.button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}
+.button-on {background-color: #1abc9c;}
+.button-on:active {background-color: #16a085;}
+.button-off {background-color: #34495e;}
+.button-off:active {background-color: #2c3e50;}
+{font-size: 14px;color: #888;margin-bottom: 10px;}
+</style>
+</head>
+<body>
+<h1>ESP8266 Web Server</h1>
+<h3>Node Links : </h3>
+
+<p>Board Restart Status: reset </p><a class=\"button button-off\" href=/led1on>reset</a>
+<p>Board upload : </p><a class=\"button button-off\" href=/upload>upload</a>
+
+</body>
+</html>)rawliteral";
+
+String SendHTML(uint8_t led1stat,uint8_t led2stat){
+	String ptr = "<!DOCTYPE html> <html>\n";
+	ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+	ptr +="<title>LED Control</title>\n";
+	ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+	ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+	ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
+	ptr +=".button-on {background-color: #1abc9c;}\n";
+	ptr +=".button-on:active {background-color: #16a085;}\n";
+	ptr +=".button-off {background-color: #34495e;}\n";
+	ptr +=".button-off:active {background-color: #2c3e50;}\n";
+	ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+	ptr +="</style>\n";
+	ptr +="</head>\n";
+	ptr +="<body>\n";
+	ptr +="<h1>ESP8266 Web Server</h1>\n";
+	ptr +="<h3>Using Station(STA) Mode</h3>\n";
+
+	if(led1stat)
+	{ptr +="<p>Board Restart Status: ON</p><a class=\"button button-off\" href=\"/led1off\">ON</a>\n";}
+	else
+	{ptr +="<p>Board Restart Status:: OFF</p><a class=\"button button-on\" href=\"/led1on\">OFF</a>\n";}
+
+	if(led2stat)
+	{ptr +="<p>LED2 Status: ON</p><a class=\"button button-off\" href=\"/led2off\">OFF</a>\n";}
+	else
+	{ptr +="<p>LED2 Status: OFF</p><a class=\"button button-on\" href=\"/led2on\">ON</a>\n";}
+
+	ptr +="</body>\n";
+	ptr +="</html>\n";
+	return ptr;
+}
+void handle_OnConnect() {
+	LED1status = LOW;
+	LED2status = LOW;
+	Serial.println("GPIO7 Status: OFF | GPIO6 Status: OFF");
+	server.send(200, "text/html", SendHTML(LED1status,LED2status)); 
+}
+
+void handle_led1on() {
+	LED1status = HIGH;
+	Serial.println("GPIO7 Status: ON");
+	server.send(200, "text/html", SendHTML(true,LED2status)); 
+}
+
+void handle_led1off() {
+	LED1status = LOW;
+	Serial.println("GPIO7 Status: OFF");
+	server.send(200, "text/html", SendHTML(false,LED2status)); 
+}
+
+void handle_led2on() {
+	LED2status = HIGH;
+	Serial.println("GPIO6 Status: ON");
+	server.send(200, "text/html", SendHTML(LED1status,true)); 
+}
+
+void handle_led2off() {
+	LED2status = LOW;
+	Serial.println("GPIO6 Status: OFF");
+	server.send(200, "text/html", SendHTML(LED1status,false)); 
+}
+
+void handle_NotFound(){
+	server.send(404, "text/plain", "Not found");
+}
 void browser_config()
 {
 	MDNS.begin(host);
 	server.on("/", HTTP_GET, []() {
+			server.sendHeader("Connection", "close");
+			server.send(200, "text/html", loginIndex);
+			});
+	//server.on("/", handle_OnConnect);
+	server.on("/led1on", handle_led1on);
+	server.on("/led1off", handle_led1off);
+	server.on("/led2on", handle_led2on);
+	server.on("/led2off", handle_led2off);
+	server.on("/index_html", HTTP_GET, []() {
+			server.sendHeader("Connection", "close");
+			server.send(200, "text/html", index_html);
+			});
+	server.on("/upload", HTTP_GET, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/html", serverIndex);
 			});
@@ -568,15 +672,11 @@ void mqtt_publish(char *pubstr)
 {
 	int b = serializeJson(doc, out);
 
-	if(mqtt_broker_status_1 == 1) {
-		Serial.println("Sending to Arduino Broker......");
+	if(mqtt_broker_status_1 == 1)
 		boolean rc = client.publish(pubstr, out); 
-	}
 
-	if(mqtt_broker_status_2 == 1) {
-		Serial.println("Sending to PC Broker......");
+	if(mqtt_broker_status_2 == 1)
 		boolean rc2 = client2.publish(pubstr, out);
-	}
 }
 
 void mqtt_broker_clidata(uint8_t event)
@@ -765,6 +865,14 @@ void config_events_check()
 	}*/
 }
 
+void handle_func()
+{
+	if(LED1status)
+		ESP.restart();
+
+	if(LED2status)
+		Serial.println("LED2 is on");
+}
 
 void loop()
 {
@@ -784,6 +892,8 @@ void loop()
 	dev_events_check();
 
 	config_events_check();
+
+	handle_func();
 
 	client.loop();
 	client2.loop();
