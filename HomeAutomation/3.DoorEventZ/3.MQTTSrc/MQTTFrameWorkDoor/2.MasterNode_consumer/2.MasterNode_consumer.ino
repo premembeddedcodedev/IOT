@@ -165,20 +165,51 @@ String style =
 ".btn{background:#3498db;color:#fff;cursor:pointer}</style>";
 
 /* Login page */
-String loginIndex =
-"<form name=loginForm>"
-"<h1>ESP32 Login</h1>"
-"<input name=userid placeholder='User ID'> "
-"<input name=pwd placeholder=Password type=Password> "
-"<input type=submit onclick=check(this.form) class=btn value=Login></form>"
+/*
+ * Login page
+ */
+
+const char* loginIndex =
+"<form name='loginForm'>"
+"<table width='20%' bgcolor='A09F9F' align='center'>"
+"<tr>"
+"<td colspan=2>"
+"<center><font size=4><b>ESP32 Login Page</b></font></center>"
+"<br>"
+"</td>"
+"<br>"
+"<br>"
+"</tr>"
+"<tr>"
+"<td>Username:</td>"
+"<td><input type='text' size=25 name='userid'><br></td>"
+"</tr>"
+"<br>"
+"<br>"
+"<tr>"
+"<td>Password:</td>"
+"<td><input type='Password' size=25 name='pwd'><br></td>"
+"<br>"
+"<br>"
+"</tr>"
+"<tr>"
+"<td><input type='submit' onclick='check(this.form)' value='Login'></td>"
+"</tr>"
+"</table>"
+"</form>"
 "<script>"
-"function check(form) {"
+"function check(form)"
+"{"
 "if(form.userid.value=='admin' && form.pwd.value=='admin')"
-"{window.open('/serverIndex')}"
-"else"
-"{alert('Error Password or Username')}"
+"{"
+"window.open('/index_html')"
 "}"
-"</script>" + style;
+"else"
+"{"
+" alert('Error Password or Username')/*displays error message*/"
+"}"
+"}"
+"</script>";
 
 /* Server Index Page */
 String serverIndex =
@@ -226,10 +257,118 @@ String serverIndex =
 "</script>" + style;
 /* Web Server config -- end*/
 
+uint8_t LED1pin = D7;
+bool LED1status = LOW;
+
+uint8_t LED2pin = D6;
+bool LED2status = LOW;
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html> <html>
+<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">
+<title>LED Control</title>
+<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}
+body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}
+.button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}
+.button-on {background-color: #1abc9c;}
+.button-on:active {background-color: #16a085;}
+.button-off {background-color: #34495e;}
+.button-off:active {background-color: #2c3e50;}
+{font-size: 14px;color: #888;margin-bottom: 10px;}
+</style>
+</head>
+<body>
+<h1>ESP8266 Web Server</h1>
+<h3>Node Links : </h3>
+
+<p>Board Restart Status: reset </p><a class=\"button button-off\" href=/led1on>reset</a>
+<p>Board upload : </p><a class=\"button button-off\" href=/upload>upload</a>
+
+</body>
+</html>)rawliteral";
+
+String SendHTML(uint8_t led1stat,uint8_t led2stat){
+	String ptr = "<!DOCTYPE html> <html>\n";
+	ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+	ptr +="<title>LED Control</title>\n";
+	ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+	ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+	ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
+	ptr +=".button-on {background-color: #1abc9c;}\n";
+	ptr +=".button-on:active {background-color: #16a085;}\n";
+	ptr +=".button-off {background-color: #34495e;}\n";
+	ptr +=".button-off:active {background-color: #2c3e50;}\n";
+	ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+	ptr +="</style>\n";
+	ptr +="</head>\n";
+	ptr +="<body>\n";
+	ptr +="<h1>ESP8266 Web Server</h1>\n";
+	ptr +="<h3>Using Station(STA) Mode</h3>\n";
+
+	if(led1stat)
+	{ptr +="<p>Board Restart Status: ON</p><a class=\"button button-off\" href=\"/led1off\">ON</a>\n";}
+	else
+	{ptr +="<p>Board Restart Status:: OFF</p><a class=\"button button-on\" href=\"/led1on\">OFF</a>\n";}
+
+	if(led2stat)
+	{ptr +="<p>LED2 Status: ON</p><a class=\"button button-off\" href=\"/led2off\">OFF</a>\n";}
+	else
+	{ptr +="<p>LED2 Status: OFF</p><a class=\"button button-on\" href=\"/led2on\">ON</a>\n";}
+
+	ptr +="</body>\n";
+	ptr +="</html>\n";
+	return ptr;
+}
+void handle_OnConnect() {
+	LED1status = LOW;
+	LED2status = LOW;
+	Serial.println("GPIO7 Status: OFF | GPIO6 Status: OFF");
+	server.send(200, "text/html", SendHTML(LED1status,LED2status)); 
+}
+
+void handle_led1on() {
+	LED1status = HIGH;
+	Serial.println("GPIO7 Status: ON");
+	server.send(200, "text/html", SendHTML(true,LED2status)); 
+}
+
+void handle_led1off() {
+	LED1status = LOW;
+	Serial.println("GPIO7 Status: OFF");
+	server.send(200, "text/html", SendHTML(false,LED2status)); 
+}
+
+void handle_led2on() {
+	LED2status = HIGH;
+	Serial.println("GPIO6 Status: ON");
+	server.send(200, "text/html", SendHTML(LED1status,true)); 
+}
+
+void handle_led2off() {
+	LED2status = LOW;
+	Serial.println("GPIO6 Status: OFF");
+	server.send(200, "text/html", SendHTML(LED1status,false)); 
+}
+
+void handle_NotFound(){
+	server.send(404, "text/plain", "Not found");
+}
 void browser_config()
 {
 	MDNS.begin(host);
 	server.on("/", HTTP_GET, []() {
+			server.sendHeader("Connection", "close");
+			server.send(200, "text/html", loginIndex);
+			});
+	//server.on("/", handle_OnConnect);
+	server.on("/led1on", handle_led1on);
+	server.on("/led1off", handle_led1off);
+	server.on("/led2on", handle_led2on);
+	server.on("/led2off", handle_led2off);
+	server.on("/index_html", HTTP_GET, []() {
+			server.sendHeader("Connection", "close");
+			server.send(200, "text/html", index_html);
+			});
+	server.on("/upload", HTTP_GET, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/html", serverIndex);
 			});
@@ -783,6 +922,11 @@ void reconnect_dup() {
 
 }
 
+void handle_func()
+{
+	if(LED1status)
+		ESP.restart();
+}
 void loop()
 {
 	if ( WiFi.status() != WL_CONNECTED ) {
@@ -802,6 +946,7 @@ void loop()
 
 	dev_events_check();
 
+	handle_func();
 	client.loop();
 	client2.loop();
 
