@@ -1,4 +1,0 @@
-arduino-cli sketch new
-
-arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:nano:cpu=atmega328old  --input-dir ./out/ 
-arduino-cli sketch new sample
