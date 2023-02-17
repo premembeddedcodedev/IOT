@@ -18,6 +18,7 @@ yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need 
           a. Install Support Arduino Board cores
                   1. arduino-cli core install arduino:avr
           b. Install Support for 3rd party Board cores
+          c. arduino-cli board listall | grep arduino | grep uno
       
       5. arduino-cli config init -- this can be done once 
       
