@@ -1,0 +1,34 @@
+Current behavior
+The board names are missing.
+
+Steps to reproduce:
+
+Here are the steps to reproduce the problem with the CLI only. I am not sure if this is an IDE problem, maybe the way we update the index and run the search from the IDE is incorrect.
+
+Wipe the previous state if any:
+rm -rf ~/Library/Arduino15
+Check the CLI version:
+./arduino-cli version
+Update index with a 3rd party core:
+./arduino-cli core update-index --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json
+Run a wildcard seach for all cores:
+./arduino-cli core search --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json
+Install the arbotix:avr 3rd party core:
+./arduino-cli core install arbotix:avr --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json
+Update the index without the URL of the previously installed 3rd party core:
+./arduino-cli core update-index
+Run a new platform search with the additional core URL; you can see the 3rd part core and its Name:
+./arduino-cli core search --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json
+Run another platform search without the additional core URL; you cannot see the Name of the installed 3rd party core:
+./arduino-cli core search
+All in one (you can see the final search does not contain the Name of the installed 3rd party core):
+
+rm -rf ~/Library/Arduino15 \
+&& ./arduino-cli version \
+&& ./arduino-cli core update-index --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json \
+&& ./arduino-cli core search --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json \
+&& ./arduino-cli core install arbotix:avr --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json \
+&& ./arduino-cli core update-index \
+&& ./arduino-cli core search --additional-urls https://tician.github.io/arbotix/package_trossen_arbotix_index.json \
+&& ./arduino-cli core search
+End of the output:
