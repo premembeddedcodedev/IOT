@@ -2,6 +2,8 @@
 
 Arduino Commandline interface (arduino-cli):
 
+Note: if you want to change the path for downloading the packages, please copy entire ~/.arduino15 folder into your path and change the directory in ~/.arduino15 default folder.
+
 yaml (~/.arduino15/arduino-cli.yaml) file is a configuration file which we need to change whenever we want to install any library and board configurations
 
       Pre-requisites for  (arduino-cli) Arduino Command Line Interface in ubuntu:
