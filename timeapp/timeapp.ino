@@ -171,7 +171,9 @@ void loop()
 	}
 	display.print(seconds);
 
-	if(minutes == 40) {
+	int check = hours;
+
+	if(minutes == 40 && check == hours) {
 		Serial.print("2nd display Seconds: ");
 		Serial.println(temp);
 		TCA9548A(2);
@@ -187,6 +189,7 @@ void loop()
 		temp++;
 		display.print(temp);
 		display.display();
+		check += 1;
 	}
 
 	display.display();
